@@ -286,9 +286,6 @@ const Clinics = () => {
                 <button className="dashboard-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); navigate('/dashboard'); }}>
                   Dashboard
                 </button>
-                <button className="dashboard-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); navigate('/'); }}>
-                  Home
-                </button>
                 <button className="dashboard-menu-dropdown-item" onClick={handleLogout}>
                   Logout
                 </button>

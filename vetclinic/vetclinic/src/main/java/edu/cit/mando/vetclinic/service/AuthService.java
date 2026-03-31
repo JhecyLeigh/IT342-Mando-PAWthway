@@ -21,7 +21,8 @@ public class AuthService {
         }
 
         User user = new User();
-        user.setUsername(buildUsername(request));
+        user.setFirstname(request.getFirstname());
+        user.setLastname(request.getLastname());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         return userRepository.save(user);
@@ -36,10 +37,4 @@ public class AuthService {
         return user;
     }
 
-    private String buildUsername(RegisterRequest request) {
-        String first = request.getFirstname() == null ? "" : request.getFirstname().trim();
-        String last = request.getLastname() == null ? "" : request.getLastname().trim();
-        String fullName = (first + " " + last).trim();
-        return fullName.isEmpty() ? request.getEmail() : fullName;
-    }
 }
