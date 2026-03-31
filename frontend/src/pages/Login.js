@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import logo from '../assets/logo.png';
 import '../App.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  const successMessage = location.state?.successMessage || '';
+
   const handleLogin = async (e) => {
     e.preventDefault();
+    setErrorMessage('');
 
     try {
       const response = await axios.post(
@@ -21,14 +26,14 @@ const Login = () => {
       );
       console.log("Login Success:", response.data);
       localStorage.setItem("user", JSON.stringify(response.data));
-      alert("Login successful!");
       navigate("/dashboard");
     } catch (error) {
       console.error("Login error:", error);
       const message =
+        error.response?.data ||
         error.response?.data?.message ||
         "Invalid email or password";
-      alert(message);
+      setErrorMessage(message);
     }
   };
 
@@ -37,6 +42,8 @@ const Login = () => {
         <div className="login-modal">
         <img src={logo} alt="Logo" className="login-modal-logo" />
         <h3 className="login-modal-title">LOGIN</h3>
+        {successMessage && <p className="form-message form-message-success">{successMessage}</p>}
+        {errorMessage && <p className="form-message form-message-error">{errorMessage}</p>}
         <form onSubmit={handleLogin}>
             <div className="login-modal-field">
             <label>Email</label>

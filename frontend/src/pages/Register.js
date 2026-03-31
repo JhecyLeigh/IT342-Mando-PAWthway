@@ -9,9 +9,13 @@ const Register = () => {
   const [lastname, setLastname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
+
   const handleRegister = async (e) => {
     e.preventDefault();
+    setErrorMessage('');
+
     try {
       const response = await axios.post(
         'http://localhost:8080/api/v1/auth/register',
@@ -25,16 +29,18 @@ const Register = () => {
       localStorage.setItem('firstname', firstname.trim());
       localStorage.setItem('lastname', lastname.trim());
       console.log("Registration Success:", response.data);
-      alert("Registration successful!");
-      navigate('/login');
+      navigate('/login', {
+        state: { successMessage: 'Registration successful. Please log in.' }
+      });
 
     } catch (error) {
       console.error("Registration error:", error);
       const errorMessage =
+        error.response?.data ||
         error.response?.data?.message ||
         error.message ||
         "Registration failed. Please try again.";
-      alert(errorMessage);
+      setErrorMessage(errorMessage);
     }
   };
 
@@ -43,6 +49,7 @@ const Register = () => {
         <div className="login-modal">
         <img src={logo} alt="Logo" className="login-modal-logo" />
         <h3 className="login-modal-title">REGISTER</h3>
+        {errorMessage && <p className="form-message form-message-error">{errorMessage}</p>}
         <form onSubmit={handleRegister}>
         <div className="login-modal-field">
         <label>First Name:</label>
