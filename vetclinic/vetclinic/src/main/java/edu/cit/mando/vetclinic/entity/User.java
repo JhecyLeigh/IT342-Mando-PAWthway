@@ -1,6 +1,6 @@
 package edu.cit.mando.vetclinic.entity;
 import jakarta.persistence.*;
-import lombok.*;
+
 @Entity
 @Table(name = "users")
 public class User {
