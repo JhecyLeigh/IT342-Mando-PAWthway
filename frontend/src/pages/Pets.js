@@ -17,6 +17,7 @@ const Pets = () => {
   const [editingPetId, setEditingPetId] = useState(null);
   const [isUpdatingPet, setIsUpdatingPet] = useState(false);
   const [deletingPetId, setDeletingPetId] = useState(null);
+  const [petPendingDelete, setPetPendingDelete] = useState(null);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [petForm, setPetForm] = useState({
     petName: '',
@@ -226,11 +227,31 @@ const Pets = () => {
     }
   };
 
-  const handleDeletePet = async (petId) => {
+  const requestDeletePet = (pet) => {
+    setErrorMessage('');
+    setSuccessMessage('');
+    setPetPendingDelete(pet);
+  };
+
+  const cancelDeletePet = () => {
+    if (deletingPetId) {
+      return;
+    }
+
+    setPetPendingDelete(null);
+  };
+
+  const handleDeletePet = async () => {
+    if (!petPendingDelete?.id) {
+      return;
+    }
+
     if (!user?.id) {
       setErrorMessage('Please log in again before deleting a pet.');
       return;
     }
+
+    const petId = petPendingDelete.id;
 
     setDeletingPetId(petId);
     setErrorMessage('');
@@ -243,6 +264,7 @@ const Pets = () => {
         cancelEditingPet();
       }
       setSuccessMessage('Pet deleted successfully.');
+      setPetPendingDelete(null);
     } catch (error) {
       const message =
         error.response?.data ||
@@ -303,6 +325,40 @@ const Pets = () => {
           </div>
         )}
 
+        {petPendingDelete && (
+          <div className="clinic-modal-backdrop" onClick={cancelDeletePet}>
+            <section className="clinic-modal pet-delete-modal" onClick={(event) => event.stopPropagation()}>
+              <div className="clinic-modal-header">
+                <div>
+                  <h3 className="clinic-modal-title">Delete Pet</h3>
+                  <p className="clinic-modal-notes">
+                    Are you sure you want to delete <strong>{petPendingDelete.petName}</strong>? This action cannot be undone.
+                  </p>
+                </div>
+                <button className="clinic-modal-close" onClick={cancelDeletePet} disabled={deletingPetId === petPendingDelete.id}>×</button>
+              </div>
+              <div className="pet-delete-actions">
+                <button
+                  type="button"
+                  className="dashboard-navbar-btn pet-delete-cancel-btn"
+                  onClick={cancelDeletePet}
+                  disabled={deletingPetId === petPendingDelete.id}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="dashboard-explore-btn pet-delete-confirm-btn"
+                  onClick={handleDeletePet}
+                  disabled={deletingPetId === petPendingDelete.id}
+                >
+                  {deletingPetId === petPendingDelete.id ? 'Deleting...' : 'Delete Pet'}
+                </button>
+              </div>
+            </section>
+          </div>
+        )}
+
         <div className="pets-page-shell">
           {successMessage && <p className="form-message form-message-success">{successMessage}</p>}
           {errorMessage && <p className="form-message form-message-error">{errorMessage}</p>}
@@ -312,9 +368,9 @@ const Pets = () => {
               <div className="pet-listing-header">
                 <h3>Registered Pets</h3>
                 <div className="pet-listing-actions">
-                   <button
+                  <button
                     type="button"
-                    className="pet-icon-btn pet-icon-btn-add"
+                    className="pet-icon-btn pet-icon-btn-add pet-header-add-btn"
                     onClick={openRegisterModal}
                     aria-label="Add pet"
                     title="Add Pet" 
@@ -436,7 +492,7 @@ const Pets = () => {
                               <button
                                 type="button"
                                 className="pet-icon-btn pet-icon-btn-danger"
-                                onClick={() => handleDeletePet(pet.id)}
+                                onClick={() => requestDeletePet(pet)}
                                 disabled={deletingPetId === pet.id}
                                 aria-label="Delete pet"
                                 title="Delete"
