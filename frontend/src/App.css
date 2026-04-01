@@ -129,8 +129,8 @@
 }
 
 
-/* Homepage styles */
-.homepage-container {
+/* Landing Page styles */
+.landingpage-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -184,15 +184,15 @@
   padding: 0.2em 0 0.2em 0;
 }
 
-/* Dashboard Styles */
-.dashboard-bg {
+/* Homepage Styles */
+.homepage-bg {
   min-height: 100vh;
   background-color: #f5f5f5;
   padding: 0;
   width: 100%;
   box-sizing: border-box;
 }
-.dashboard-navbar {
+.homepage-navbar {
   width: 100%;
   background: #fff;
   padding: 0.7rem 2rem;
@@ -207,17 +207,17 @@
   z-index: 100;
   border-bottom: 4px solid #43a047;
 }
-.dashboard-navbar-left {
+.homepage-navbar-left {
   display: flex;
   align-items: center;
   gap: 0.7rem;
 }
-.dashboard-navbar-logo {
+.homepage-navbar-logo {
   height: 60px;
   width: auto;
   margin-right: 0.7rem;
 }
-.dashboard-navbar-search-menu {
+.homepage-navbar-search-menu {
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -226,7 +226,7 @@
     flex-wrap: wrap;
     gap: 1.5rem;
   }
-.dashboard-navbar-btn {
+.homepage-navbar-btn {
     background: none;
     border: none;
     color: #43a047;
@@ -237,18 +237,18 @@
     border-radius: 4px;
     transition: background 0.2s, color 0.2s;
   }
-.dashboard-navbar-btn:hover {
+.homepage-navbar-btn:hover {
     background: #eaf8ec;
     color: #388e3c;
   }
   
-.dashboard-menu-dropdown-container {
+.homepage-menu-dropdown-container {
     position: relative;
     display: inline-flex;
     align-items: center;
   }
   
-.dashboard-menu-dropdown {
+.homepage-menu-dropdown {
     position: absolute;
     top: calc(100% + 8px);
     right: 0;
@@ -261,7 +261,7 @@
     z-index: 1000;
   }
   
-.dashboard-menu-dropdown .dashboard-menu-dropdown-item {
+.homepage-menu-dropdown .homepage-menu-dropdown-item {
     width: 100%;
     border: none;
     background: transparent;
@@ -274,11 +274,11 @@
     cursor: pointer;
   }
   
-.dashboard-menu-dropdown .dashboard-menu-dropdown-item:hover {
+.homepage-menu-dropdown .homepage-menu-dropdown-item:hover {
     background: #eaf8ec;
   }
 
-.dashboard-navbar-search-img {
+.homepage-navbar-search-img {
   height: 24px;
   width: 24px;
   margin-right: 0.75rem;
@@ -286,7 +286,7 @@
   object-fit: contain;
   opacity: 0.7;
 }
-.dashboard-navbar-search {
+.homepage-navbar-search {
     display: flex;
     align-items: center;
     position: relative;
@@ -297,7 +297,7 @@
   width: min(100%, 520px);
   min-width: 0;
 }
-.dashboard-navbar-search-input {
+.homepage-navbar-search-input {
     border: none;
     background: transparent;
     font-size: 1rem;
@@ -306,7 +306,7 @@
     padding: 0.4rem 0.2rem;
     width: 100%;
   }
-.dashboard-search-results {
+.homepage-search-results {
     position: absolute;
     top: calc(100% + 8px);
     left: 0;
@@ -319,7 +319,7 @@
     z-index: 1000;
   }
 
-.dashboard-search-result-item {
+.homepage-search-result-item {
     width: 100%;
     border: none;
     background: transparent;
@@ -332,17 +332,17 @@
     cursor: pointer;
   }
 
-.dashboard-search-result-item:hover {
+.homepage-search-result-item:hover {
     background: #eaf8ec;
   }
 
-.dashboard-search-result-empty {
+.homepage-search-result-empty {
     padding: 0.7rem 0.8rem;
     color: #5b6f5d;
     font-size: 0.92rem;
   }
 
-.dashboard-content-wrapper {
+.homepage-content-wrapper {
   width: 100%;
   display: flex;
   justify-content: center;
@@ -350,7 +350,7 @@
   padding: 40px 16px 24px;
   box-sizing: border-box;
 }
-.dashboard-content {
+.homepage-content {
     padding: 2.5rem 2rem;
     max-width: 700px;
     width: 100%;
@@ -359,27 +359,27 @@
   align-items: flex-start;
   box-sizing: border-box;
 }
-.dashboard-title {
+.homepage-title {
   color: #388e3c;
   font-weight: 700;
   margin-top: 0;
   margin-bottom: 1rem;
   font-size: 2rem;
 }
-.dashboard-desc {
+.homepage-desc {
   color: #444;
   font-size: 1.1rem;
   margin-bottom: 2rem;
 }
 
-.dashboard-action-grid {
+.homepage-action-grid {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
 }
 
-.dashboard-action-card {
+.homepage-action-card {
   width: 100%;
   border: 1px solid #d9eadb;
   border-radius: 14px;
@@ -391,13 +391,13 @@
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
-.dashboard-action-card:hover {
+.homepage-action-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px #00000012;
   border-color: #b9d7bb;
 }
 
-.dashboard-action-title {
+.homepage-action-title {
   display: block;
   margin-bottom: 0.45rem;
   color: #2f6f35;
@@ -405,13 +405,13 @@
   font-weight: 700;
 }
 
-.dashboard-action-desc {
+.homepage-action-desc {
   display: block;
   color: #4a4a4a;
   font-size: 0.94rem;
   line-height: 1.5;
 }
-.dashboard-explore-btn {
+.homepage-explore-btn {
   padding: 10px 24px;
   background-color: #43a047;
   color: white;
@@ -423,14 +423,70 @@
   box-shadow: 0 2px 8px #0001;
   transition: background 0.2s;
 }
-.dashboard-explore-btn:hover {
+.homepage-explore-btn:hover {
   background: #388e3c;
 }
 
-.dashboard-explore-btn:disabled {
+.homepage-explore-btn:disabled {
   background: #b8c7b9;
   cursor: not-allowed;
   box-shadow: none;
+}
+
+.homepage-logout-modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(19, 34, 22, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+  z-index: 1300;
+}
+
+.homepage-logout-modal {
+  width: min(420px, 100%);
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 18px 48px #0000002b;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.homepage-logout-modal h3 {
+  margin: 0 0 0.5rem;
+  color: #2f6f35;
+}
+
+.homepage-logout-modal p {
+  margin: 0;
+  color: #444;
+  line-height: 1.5;
+}
+
+.homepage-logout-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.homepage-logout-btn {
+  border: none;
+  border-radius: 10px;
+  background: #43a047;
+  color: #fff;
+  padding: 0.8rem 1.15rem;
+  font-size: 0.98rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.homepage-logout-btn-secondary {
+  background: #edf3ed;
+  color: #2f6f35;
 }
 /* Clinics Page */
 .clinics-page-shell {
@@ -1067,7 +1123,7 @@
     min-width: 0;
   }
 
-  .homepage-container {
+  .landingpage-container {
     justify-content: flex-start;
     padding-top: 72px;
   }
@@ -1088,48 +1144,48 @@
     margin-top: 2rem;
   }
 
-  .dashboard-navbar {
+  .homepage-navbar {
     padding: 1rem;
     align-items: stretch;
   }
 
-  .dashboard-navbar-left,
-  .dashboard-navbar-search-menu {
+  .homepage-navbar-left,
+  .homepage-navbar-search-menu {
     width: 100%;
   }
 
-  .dashboard-navbar-search-menu {
+  .homepage-navbar-search-menu {
       flex-direction: column;
       align-items: stretch;
       gap: 0.75rem;
     }
 
-  .dashboard-menu-dropdown-container {
+  .homepage-menu-dropdown-container {
       align-self: flex-end;
     }
 
-  .dashboard-navbar-search {
+  .homepage-navbar-search {
     width: 100%;
   }
 
-    .dashboard-content-wrapper {
+    .homepage-content-wrapper {
       margin-top: 0;
       padding-top: 24px;
   }
 
-  .dashboard-content {
+  .homepage-content {
     padding: 1.5rem 1rem;
   }
 
-  .dashboard-title {
+  .homepage-title {
     font-size: 1.6rem;
   }
 
-  .dashboard-desc {
+  .homepage-desc {
     font-size: 1rem;
   }
 
-  .dashboard-action-grid {
+  .homepage-action-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1193,7 +1249,7 @@
     justify-content: stretch;
   }
 
-  .appointment-actions .dashboard-explore-btn {
+  .appointment-actions .homepage-explore-btn {
     width: 100%;
   }
 }
@@ -1203,17 +1259,17 @@
     padding: 16px 12px;
   }
 
-  .dashboard-navbar-logo {
+  .homepage-navbar-logo {
     height: 48px;
   }
 
-  .dashboard-navbar-btn,
-  .dashboard-menu-dropdown .dashboard-menu-dropdown-item,
-  .dashboard-explore-btn {
+  .homepage-navbar-btn,
+  .homepage-menu-dropdown .homepage-menu-dropdown-item,
+  .homepage-explore-btn {
         width: 100%;
       }
 
-  .dashboard-menu-dropdown {
+  .homepage-menu-dropdown {
       left: 0;
       right: 0;
       min-width: 0;

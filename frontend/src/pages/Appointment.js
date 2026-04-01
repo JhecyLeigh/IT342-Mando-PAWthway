@@ -147,17 +147,17 @@ const Appointment = () => {
 
   if (!clinic) {
     return (
-      <div className="dashboard-bg">
-        <nav className="dashboard-navbar">
-          <div className="dashboard-navbar-left">
-            <img src={logo} alt="Logo" className="dashboard-navbar-logo" />
+      <div className="homepage-bg">
+        <nav className="homepage-navbar">
+          <div className="homepage-navbar-left">
+            <img src={logo} alt="Logo" className="homepage-navbar-logo" />
           </div>
         </nav>
-        <div className="dashboard-content-wrapper">
-          <div className="dashboard-content appointment-page">
-            <h2 className="dashboard-title">Clinic not found</h2>
-            <p className="dashboard-desc">The selected clinic does not exist.</p>
-            <button className="dashboard-explore-btn" onClick={() => navigate('/clinics')}>
+        <div className="homepage-content-wrapper">
+          <div className="homepage-content appointment-page">
+            <h2 className="homepage-title">Clinic not found</h2>
+            <p className="homepage-desc">The selected clinic does not exist.</p>
+            <button className="homepage-explore-btn" onClick={() => navigate('/clinics')}>
               Back to Clinics
             </button>
           </div>
@@ -167,37 +167,37 @@ const Appointment = () => {
   }
 
   return (
-    <div className="dashboard-bg">
-      <nav className="dashboard-navbar">
-        <div className="dashboard-navbar-left">
-          <img src={logo} alt="Logo" className="dashboard-navbar-logo" />
+    <div className="homepage-bg">
+      <nav className="homepage-navbar">
+        <div className="homepage-navbar-left">
+          <img src={logo} alt="Logo" className="homepage-navbar-logo" />
         </div>
-        <div className="dashboard-navbar-search-menu">
-          <div className="dashboard-navbar-search">
-            <img src={searchIcon} alt="Search" className="dashboard-navbar-search-img" />
+        <div className="homepage-navbar-search-menu">
+          <div className="homepage-navbar-search">
+            <img src={searchIcon} alt="Search" className="homepage-navbar-search-img" />
             <input
-              className="dashboard-navbar-search-input"
+              className="homepage-navbar-search-input"
               type="text"
               value={clinic.name}
               readOnly
             />
           </div>
-          <div className="dashboard-menu-dropdown-container">
-            <button className="dashboard-navbar-btn" onClick={() => setShowProfileDropdown((value) => !value)}>
+          <div className="homepage-menu-dropdown-container">
+            <button className="homepage-navbar-btn" onClick={() => setShowProfileDropdown((value) => !value)}>
               Menu
             </button>
             {showProfileDropdown && (
-              <div className="dashboard-menu-dropdown">
-                <button className="dashboard-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); navigate('/dashboard'); }}>
-                  Dashboard
+              <div className="homepage-menu-dropdown">
+                <button className="homepage-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); navigate('/homepage'); }}>
+                  Homepage
                 </button>
-                <button className="dashboard-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); navigate('/clinics'); }}>
+                <button className="homepage-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); navigate('/clinics'); }}>
                   Clinics
                 </button>
-                <button className="dashboard-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); navigate('/pets'); }}>
+                <button className="homepage-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); navigate('/pets'); }}>
                   My Pets
                 </button>
-                <button className="dashboard-menu-dropdown-item" onClick={handleLogout}>
+                <button className="homepage-menu-dropdown-item" onClick={handleLogout}>
                   Logout
                 </button>
               </div>
@@ -206,26 +206,26 @@ const Appointment = () => {
         </div>
       </nav>
 
-      <div className="dashboard-content-wrapper appointment-wrapper">
+      <div className="homepage-content-wrapper appointment-wrapper">
         {showLogoutModal && (
-          <div className="dashboard-logout-modal-bg">
-            <div className="dashboard-logout-modal">
+          <div className="homepage-logout-modal-bg">
+            <div className="homepage-logout-modal">
               <h3>Confirm Logout</h3>
               <p>Are you sure you want to logout?</p>
-              <div className="dashboard-logout-actions">
-                <button className="dashboard-logout-btn" onClick={confirmLogout}>Logout</button>
-                <button className="dashboard-logout-btn dashboard-logout-btn-secondary" onClick={cancelLogout}>Cancel</button>
+              <div className="homepage-logout-actions">
+                <button className="homepage-logout-btn" onClick={confirmLogout}>Logout</button>
+                <button className="homepage-logout-btn homepage-logout-btn-secondary" onClick={cancelLogout}>Cancel</button>
               </div>
             </div>
           </div>
         )}
 
-        <div className="dashboard-content appointment-page">
+        <div className="homepage-content appointment-page">
           <div className="appointment-header">
             <div>
               <p className="appointment-label">Create Appointment</p>
-              <h2 className="dashboard-title appointment-title">{clinic.name}</h2>
-              <p className="dashboard-desc appointment-desc">{clinic.address}</p>
+              <h2 className="homepage-title appointment-title">{clinic.name}</h2>
+              <p className="homepage-desc appointment-desc">{clinic.address}</p>
             </div>
             <button className="clinics-back-btn" onClick={() => navigate('/clinics')}>
               Back to Clinics
@@ -301,7 +301,7 @@ const Appointment = () => {
                 <p>You need to register a pet before booking an appointment.</p>
                 <button
                   type="button"
-                  className="dashboard-navbar-btn clinic-inline-action"
+                  className="homepage-navbar-btn clinic-inline-action"
                   onClick={() => navigate('/pets')}
                 >
                   Go to My Pets
@@ -317,7 +317,7 @@ const Appointment = () => {
             )}
 
             <div className="appointment-actions">
-              <button type="submit" className="dashboard-explore-btn" disabled={clinicStatus !== 'OPEN' || !formData.petId || !user?.id || pets.length === 0}>
+              <button type="submit" className="homepage-explore-btn" disabled={clinicStatus !== 'OPEN' || !formData.petId || !user?.id || pets.length === 0}>
                 Book Appointment
               </button>
             </div>

@@ -26,7 +26,7 @@ const Login = () => {
       );
       console.log("Login Success:", response.data);
       localStorage.setItem("user", JSON.stringify(response.data));
-      navigate("/dashboard");
+      navigate("/homepage");
     } catch (error) {
       console.error("Login error:", error);
       const message =

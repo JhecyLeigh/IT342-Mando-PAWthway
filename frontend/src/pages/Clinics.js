@@ -201,35 +201,35 @@ const Clinics = () => {
   };
 
   return (
-    <div className="dashboard-bg clinics-page-shell">
-      <nav className="dashboard-navbar">
-        <div className="dashboard-navbar-left">
-          <img src={logo} alt="Logo" className="dashboard-navbar-logo" />
+    <div className="homepage-bg clinics-page-shell">
+      <nav className="homepage-navbar">
+        <div className="homepage-navbar-left">
+          <img src={logo} alt="Logo" className="homepage-navbar-logo" />
         </div>
-        <div className="dashboard-navbar-search-menu">
-          <div className="dashboard-navbar-search">
-            <img src={searchIcon} alt="Search" className="dashboard-navbar-search-img" />
+        <div className="homepage-navbar-search-menu">
+          <div className="homepage-navbar-search">
+            <img src={searchIcon} alt="Search" className="homepage-navbar-search-img" />
             <input
-              className="dashboard-navbar-search-input"
+              className="homepage-navbar-search-input"
               type="text"
               placeholder="Search clinics, areas, or addresses..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="dashboard-menu-dropdown-container">
-            <button className="dashboard-navbar-btn" onClick={() => setShowProfileDropdown((value) => !value)}>
+          <div className="homepage-menu-dropdown-container">
+            <button className="homepage-navbar-btn" onClick={() => setShowProfileDropdown((value) => !value)}>
               Menu
             </button>
             {showProfileDropdown && (
-              <div className="dashboard-menu-dropdown">
-                <button className="dashboard-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); navigate('/dashboard'); }}>
-                  Dashboard
+              <div className="homepage-menu-dropdown">
+                <button className="homepage-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); navigate('/homepage'); }}>
+                  Homepage
                 </button>
-                <button className="dashboard-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); navigate('/pets'); }}>
+                <button className="homepage-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); navigate('/pets'); }}>
                   My Pets
                 </button>
-                <button className="dashboard-menu-dropdown-item" onClick={handleLogout}>
+                <button className="homepage-menu-dropdown-item" onClick={handleLogout}>
                   Logout
                 </button>
               </div>
@@ -240,13 +240,13 @@ const Clinics = () => {
 
       <div className="clinics-layout">
         {showLogoutModal && (
-          <div className="dashboard-logout-modal-bg">
-            <div className="dashboard-logout-modal">
+          <div className="homepage-logout-modal-bg">
+            <div className="homepage-logout-modal">
               <h3>Confirm Logout</h3>
               <p>Are you sure you want to logout?</p>
-              <div className="dashboard-logout-actions">
-                <button className="dashboard-logout-btn" onClick={confirmLogout}>Logout</button>
-                <button className="dashboard-logout-btn dashboard-logout-btn-secondary" onClick={cancelLogout}>Cancel</button>
+              <div className="homepage-logout-actions">
+                <button className="homepage-logout-btn" onClick={confirmLogout}>Logout</button>
+                <button className="homepage-logout-btn homepage-logout-btn-secondary" onClick={cancelLogout}>Cancel</button>
               </div>
             </div>
           </div>
@@ -346,7 +346,7 @@ const Clinics = () => {
                         <p>You need to register a pet before booking an appointment.</p>
                         <button
                           type="button"
-                          className="dashboard-navbar-btn clinic-inline-action"
+                          className="homepage-navbar-btn clinic-inline-action"
                           onClick={() => navigate('/pets')}
                         >
                           Go to My Pets
@@ -361,7 +361,7 @@ const Clinics = () => {
                     )}
                     <button
                       type="submit"
-                      className="dashboard-explore-btn clinic-booking-btn"
+                      className="homepage-explore-btn clinic-booking-btn"
                       disabled={selectedClinic.liveStatus !== 'OPEN' || !appointmentForm.petId || !user?.id || pets.length === 0}
                     >
                       Book Appointment
@@ -417,7 +417,7 @@ const Clinics = () => {
               </select>
             </div>
 
-            <button className="clinics-back-btn clinics-filter-action" onClick={() => navigate('/dashboard')}>
+            <button className="clinics-back-btn clinics-filter-action" onClick={() => navigate('/homepage')}>
               Back
             </button>
           </div>

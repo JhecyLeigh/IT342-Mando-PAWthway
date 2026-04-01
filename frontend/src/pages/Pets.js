@@ -277,29 +277,29 @@ const Pets = () => {
   };
 
   return (
-    <div className="dashboard-bg">
-      <nav className="dashboard-navbar">
-        <div className="dashboard-navbar-left">
-          <img src={logo} alt="Logo" className="dashboard-navbar-logo" />
+    <div className="homepage-bg">
+      <nav className="homepage-navbar">
+        <div className="homepage-navbar-left">
+          <img src={logo} alt="Logo" className="homepage-navbar-logo" />
         </div>
-        <div className="dashboard-navbar-search-menu">
-          <div className="dashboard-navbar-search">
-            <img src={searchIcon} alt="Search" className="dashboard-navbar-search-img" />
-            <input className="dashboard-navbar-search-input" type="text" value="Pet Registration" readOnly />
+        <div className="homepage-navbar-search-menu">
+          <div className="homepage-navbar-search">
+            <img src={searchIcon} alt="Search" className="homepage-navbar-search-img" />
+            <input className="homepage-navbar-search-input" type="text" value="Pet Registration" readOnly />
           </div>
-          <div className="dashboard-menu-dropdown-container">
-            <button className="dashboard-navbar-btn" onClick={() => setShowProfileDropdown((value) => !value)}>
+          <div className="homepage-menu-dropdown-container">
+            <button className="homepage-navbar-btn" onClick={() => setShowProfileDropdown((value) => !value)}>
               Menu
             </button>
             {showProfileDropdown && (
-              <div className="dashboard-menu-dropdown">
-                <button className="dashboard-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); navigate('/dashboard'); }}>
-                  Dashboard
+              <div className="homepage-menu-dropdown">
+                <button className="homepage-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); navigate('/homepage'); }}>
+                  Homepage
                 </button>
-                <button className="dashboard-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); navigate('/clinics'); }}>
+                <button className="homepage-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); navigate('/clinics'); }}>
                   Clinics
                 </button>
-                <button className="dashboard-menu-dropdown-item" onClick={handleLogout}>
+                <button className="homepage-menu-dropdown-item" onClick={handleLogout}>
                   Logout
                 </button>
               </div>
@@ -308,15 +308,15 @@ const Pets = () => {
         </div>
       </nav>
 
-      <div className="dashboard-content-wrapper pets-page-wrapper">
+      <div className="homepage-content-wrapper pets-page-wrapper">
         {showLogoutModal && (
-          <div className="dashboard-logout-modal-bg">
-            <div className="dashboard-logout-modal">
+          <div className="homepage-logout-modal-bg">
+            <div className="homepage-logout-modal">
               <h3>Confirm Logout</h3>
               <p>Are you sure you want to logout?</p>
-              <div className="dashboard-logout-actions">
-                <button className="dashboard-logout-btn" onClick={confirmLogout}>Logout</button>
-                <button className="dashboard-logout-btn dashboard-logout-btn-secondary" onClick={cancelLogout}>Cancel</button>
+              <div className="homepage-logout-actions">
+                <button className="homepage-logout-btn" onClick={confirmLogout}>Logout</button>
+                <button className="homepage-logout-btn homepage-logout-btn-secondary" onClick={cancelLogout}>Cancel</button>
               </div>
             </div>
           </div>
@@ -337,7 +337,7 @@ const Pets = () => {
               <div className="pet-delete-actions">
                 <button
                   type="button"
-                  className="dashboard-navbar-btn pet-delete-cancel-btn"
+                  className="homepage-navbar-btn pet-delete-cancel-btn"
                   onClick={cancelDeletePet}
                   disabled={deletingPetId === petPendingDelete.id}
                 >
@@ -345,7 +345,7 @@ const Pets = () => {
                 </button>
                 <button
                   type="button"
-                  className="dashboard-explore-btn pet-delete-confirm-btn"
+                  className="homepage-explore-btn pet-delete-confirm-btn"
                   onClick={handleDeletePet}
                   disabled={deletingPetId === petPendingDelete.id}
                 >
@@ -537,7 +537,7 @@ const Pets = () => {
                     </div>
                   </div>
                   <div className="appointment-actions">
-                    <button type="submit" className="dashboard-explore-btn" disabled={isSavingPet || !user?.id}>
+                    <button type="submit" className="homepage-explore-btn" disabled={isSavingPet || !user?.id}>
                       {isSavingPet ? 'Registering Pet...' : 'Register Pet'}
                     </button>
                   </div>
