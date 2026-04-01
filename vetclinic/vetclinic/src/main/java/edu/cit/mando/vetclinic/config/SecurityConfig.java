@@ -19,6 +19,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/api/v1/pets/**").permitAll()
                         .anyRequest().authenticated());
 
         return http.build();

@@ -5,6 +5,7 @@ import Register from './pages/Register.js';
 import Dashboard from './pages/Dashboard.js';
 import Clinics from './pages/Clinics.js';
 import Appointment from './pages/Appointment.js';
+import Pets from './pages/Pets.js';
 
 const isAuthenticated = () => Boolean(localStorage.getItem('user'));
 
@@ -27,6 +28,7 @@ function App() {
         </Route>
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/pets" element={<Pets />} />
           <Route path="/clinics" element={<Clinics />} />
           <Route path="/clinics/:clinicId/appointment" element={<Appointment />} />
         </Route>

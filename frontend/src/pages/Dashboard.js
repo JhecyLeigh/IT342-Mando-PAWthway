@@ -6,16 +6,12 @@ import searchIcon from '../assets/search.png';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
   const firstName = storedUser?.firstname || localStorage.getItem('firstname') || 'User';
 
   const handleLogout = () => {
-    setShowLogoutModal(true);
-  };
-
-  const confirmLogout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('firstname');
     localStorage.removeItem('lastname');
@@ -23,12 +19,69 @@ const Dashboard = () => {
     localStorage.removeItem('email');
     localStorage.removeItem('full_name');
     localStorage.removeItem('userName');
-    setShowLogoutModal(false);
     navigate('/', { replace: true });
   };
 
-  const cancelLogout = () => {
-    setShowLogoutModal(false);
+  const dashboardActions = [
+    {
+      id: 'clinics',
+      title: 'Explore Clinics',
+      description: 'Browse clinics, check availability, and book appointments.',
+      keywords: 'clinics appointments booking veterinary open closed schedule',
+      onClick: () => navigate('/clinics')
+    },
+    {
+      id: 'pets',
+      title: 'Manage Pets',
+      description: 'Register pets, update pet details, and review pet records.',
+      keywords: 'pets pet registration edit delete records',
+      onClick: () => navigate('/pets')
+    }
+  ];
+
+  const searchablePages = [
+    {
+      id: 'search-clinics',
+      label: 'Clinics',
+      keywords: 'clinic clinics appointments booking veterinary',
+      onSelect: () => navigate('/clinics')
+    },
+    {
+      id: 'search-pets',
+      label: 'My Pets',
+      keywords: 'pet pets manage pets registered pets',
+      onSelect: () => navigate('/pets')
+    },
+    {
+      id: 'search-logout',
+      label: 'Logout',
+      keywords: 'logout sign out exit',
+      onSelect: handleLogout
+    }
+  ];
+
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const matchedPages = normalizedQuery
+    ? searchablePages.filter((page) =>
+        `${page.label} ${page.keywords}`.toLowerCase().includes(normalizedQuery)
+      )
+    : [];
+
+  const handleSearchSelect = (page) => {
+    setSearchQuery('');
+    page.onSelect();
+  };
+
+  const handleSearchKeyDown = (event) => {
+    if (event.key !== 'Enter') {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (matchedPages.length > 0) {
+      handleSearchSelect(matchedPages[0]);
+    }
   };
 
   return (
@@ -41,16 +94,67 @@ const Dashboard = () => {
         <div className="dashboard-navbar-search-menu">
           <div className="dashboard-navbar-search">
             <img src={searchIcon} alt="Search" className="dashboard-navbar-search-img" />
-            <input className="dashboard-navbar-search-input" type="text" placeholder="Search..." />
+            <input
+              className="dashboard-navbar-search-input"
+              type="text"
+              placeholder="Search pages..."
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              onKeyDown={handleSearchKeyDown}
+            />
+            {normalizedQuery && (
+              <div className="dashboard-search-results">
+                {matchedPages.length > 0 ? (
+                  matchedPages.map((page) => (
+                    <button
+                      key={page.id}
+                      className="dashboard-search-result-item"
+                      onClick={() => handleSearchSelect(page)}
+                    >
+                      {page.label}
+                    </button>
+                  ))
+                ) : (
+                  <div className="dashboard-search-result-empty">
+                    No matching pages found.
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           <div className="dashboard-menu-dropdown-container">
-            <button className="dashboard-navbar-btn" onClick={() => setShowProfileDropdown(v => !v)}>
+            <button className="dashboard-navbar-btn" onClick={() => setShowProfileDropdown((value) => !value)}>
               Menu
             </button>
             {showProfileDropdown && (
               <div className="dashboard-menu-dropdown">
-                <button className="dashboard-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); navigate('/profile'); }}>Show Profile</button>
-                <button className="dashboard-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); handleLogout(); }}>Logout</button>
+                <button
+                  className="dashboard-menu-dropdown-item"
+                  onClick={() => {
+                    setShowProfileDropdown(false);
+                    navigate('/pets');
+                  }}
+                >
+                  My Pets
+                </button>
+                <button
+                  className="dashboard-menu-dropdown-item"
+                  onClick={() => {
+                    setShowProfileDropdown(false);
+                    navigate('/clinics');
+                  }}
+                >
+                  Clinics
+                </button>
+                <button
+                  className="dashboard-menu-dropdown-item"
+                  onClick={() => {
+                    setShowProfileDropdown(false);
+                    handleLogout();
+                  }}
+                >
+                  Logout
+                </button>
               </div>
             )}
           </div>
@@ -59,27 +163,19 @@ const Dashboard = () => {
 
       {/* Dashboard Content */}
       <div className="dashboard-content-wrapper">
-              {/* Logout Modal */}
-              {showLogoutModal && (
-                <div className="dashboard-logout-modal-bg">
-                  <div className="dashboard-logout-modal">
-                    <h3>Confirm Logout</h3>
-                    <p>Are you sure you want to logout?</p>
-                    <div className="dashboard-logout-actions">
-                      <button className="dashboard-logout-btn" onClick={confirmLogout}>Logout</button>
-                      <button className="dashboard-logout-btn dashboard-logout-btn-secondary" onClick={cancelLogout}>Cancel</button>
-                    </div>
-                  </div>
-                </div>
-              )}
         <div className="dashboard-content">
           <h2 className="dashboard-title">Welcome back, {firstName}!</h2>
           <p className="dashboard-desc">
             You've successfully logged in to your <b>PAWthway Dashboard</b> — your digital path to smarter veterinary care. From here, you can browse nearby clinics, schedule appointments, and manage your pet's health records.
           </p>
-          <button className="dashboard-explore-btn" onClick={() => navigate('/clinics')}>
-            Explore Clinics
-          </button>
+          <div className="dashboard-action-grid">
+            {dashboardActions.map((action) => (
+              <button key={action.id} className="dashboard-action-card" onClick={action.onClick}>
+                <span className="dashboard-action-title">{action.title}</span>
+                <span className="dashboard-action-desc">{action.description}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>

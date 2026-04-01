@@ -3,125 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import clinics from '../data/clinics';
 import logo from '../assets/logo.png';
 import searchIcon from '../assets/search.png';
+import { getDeviceNow, isClinicOpen } from '../utils/clinicSchedule';
+import { fetchPetsByUser } from '../utils/petApi';
 import '../App.css';
-
-const DAY_INDEX = {
-  Sun: 0,
-  Mon: 1,
-  Tue: 2,
-  Wed: 3,
-  Thu: 4,
-  Fri: 5,
-  Sat: 6
-};
-
-const CEBU_TIMEZONE = 'Asia/Manila';
-
-function parseTimeToMinutes(timeValue) {
-  const match = timeValue.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-  if (!match) {
-    return null;
-  }
-
-  let hour = Number(match[1]);
-  const minute = Number(match[2]);
-  const meridiem = match[3].toUpperCase();
-
-  if (meridiem === 'PM' && hour !== 12) {
-    hour += 12;
-  }
-
-  if (meridiem === 'AM' && hour === 12) {
-    hour = 0;
-  }
-
-  return hour * 60 + minute;
-}
-
-function getCebuNow() {
-  const formatter = new Intl.DateTimeFormat('en-US', {
-    timeZone: CEBU_TIMEZONE,
-    weekday: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  });
-
-  const parts = formatter.formatToParts(new Date());
-  const weekday = parts.find((part) => part.type === 'weekday')?.value || 'Sun';
-  const hour = Number(parts.find((part) => part.type === 'hour')?.value || '0');
-  const minute = Number(parts.find((part) => part.type === 'minute')?.value || '0');
-
-  return {
-    weekday,
-    dayIndex: DAY_INDEX[weekday] ?? 0,
-    minutesNow: hour * 60 + minute
-  };
-}
-
-function isClinicOpen(schedule, currentTime) {
-  if (!schedule) {
-    return false;
-  }
-
-  if (/24\/7/i.test(schedule)) {
-    return true;
-  }
-
-  if (/available on request|booking-based|appointment/i.test(schedule)) {
-    return false;
-  }
-
-  const segments = schedule.split(',').map((segment) => segment.trim()).filter(Boolean);
-
-  for (const segment of segments) {
-    if (/closed/i.test(segment)) {
-      continue;
-    }
-
-    const rangeMatch = segment.match(/^(Daily|Mon|Tue|Wed|Thu|Fri|Sat|Sun)(?:-(Mon|Tue|Wed|Thu|Fri|Sat|Sun))?\s+(\d{1,2}:\d{2}\s*[AP]M)\s*-\s*(\d{1,2}:\d{2}\s*[AP]M)$/i);
-    if (!rangeMatch) {
-      continue;
-    }
-
-    const startDay = rangeMatch[1];
-    const endDay = rangeMatch[2];
-    const openMinutes = parseTimeToMinutes(rangeMatch[3]);
-    const closeMinutes = parseTimeToMinutes(rangeMatch[4]);
-
-    if (openMinutes === null || closeMinutes === null) {
-      continue;
-    }
-
-    const days = [];
-
-    if (/^daily$/i.test(startDay)) {
-      days.push(0, 1, 2, 3, 4, 5, 6);
-    } else if (endDay) {
-      const startIndex = DAY_INDEX[startDay];
-      const endIndex = DAY_INDEX[endDay];
-      if (startIndex !== undefined && endIndex !== undefined) {
-        for (let day = startIndex; day <= endIndex; day += 1) {
-          days.push(day);
-        }
-      }
-    } else {
-      const dayIndex = DAY_INDEX[startDay];
-      if (dayIndex !== undefined) {
-        days.push(dayIndex);
-      }
-    }
-
-    const matchesDay = days.includes(currentTime.dayIndex);
-    const matchesTime = currentTime.minutesNow >= openMinutes && currentTime.minutesNow <= closeMinutes;
-
-    if (matchesDay && matchesTime) {
-      return true;
-    }
-  }
-
-  return false;
-}
 
 const Clinics = () => {
   const navigate = useNavigate();
@@ -131,24 +15,56 @@ const Clinics = () => {
   const [sortOrder, setSortOrder] = useState('A-Z');
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [cebuNow, setCebuNow] = useState(() => getCebuNow());
+  const [deviceNow, setDeviceNow] = useState(() => getDeviceNow());
   const [selectedClinic, setSelectedClinic] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [pets, setPets] = useState([]);
+  const [petsLoading, setPetsLoading] = useState(false);
+  const [petsError, setPetsError] = useState('');
   const [appointmentForm, setAppointmentForm] = useState({
-    petName: '',
+    petId: '',
     appointmentDate: '',
     appointmentTime: '',
     reason: '',
     notes: ''
   });
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
 
   useEffect(() => {
     const timer = window.setInterval(() => {
-      setCebuNow(getCebuNow());
+      setDeviceNow(getDeviceNow());
     }, 60000);
 
     return () => window.clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    const loadPets = async () => {
+      if (!user?.id) {
+        setPets([]);
+        return;
+      }
+
+      setPetsLoading(true);
+      setPetsError('');
+
+      try {
+        const petList = await fetchPetsByUser(user.id);
+        setPets(petList);
+      } catch (error) {
+        const message =
+          error.response?.data ||
+          error.response?.data?.message ||
+          'Unable to load registered pets.';
+        setPetsError(message);
+      } finally {
+        setPetsLoading(false);
+      }
+    };
+
+    loadPets();
+  }, [user?.id]);
 
   const handleLogout = () => {
     setShowProfileDropdown(false);
@@ -158,8 +74,10 @@ const Clinics = () => {
   const closeClinicModal = () => {
     setSelectedClinic(null);
     setSuccessMessage('');
+    setErrorMessage('');
+    setPetsError('');
     setAppointmentForm({
-      petName: '',
+      petId: '',
       appointmentDate: '',
       appointmentTime: '',
       reason: '',
@@ -198,7 +116,7 @@ const Clinics = () => {
 
   const clinicsWithLiveStatus = clinics.map((clinic) => ({
     ...clinic,
-    liveStatus: isClinicOpen(clinic.schedule, cebuNow) ? 'OPEN' : 'CLOSED'
+    liveStatus: isClinicOpen(clinic.schedule, deviceNow) ? 'OPEN' : 'CLOSED'
   }));
 
   const filteredClinics = clinicsWithLiveStatus
@@ -219,6 +137,8 @@ const Clinics = () => {
 
   const handleAppointmentChange = (event) => {
     const { name, value } = event.target;
+    setSuccessMessage('');
+    setErrorMessage('');
     setAppointmentForm((current) => ({
       ...current,
       [name]: value
@@ -227,21 +147,41 @@ const Clinics = () => {
 
   const handleAppointmentSubmit = (event) => {
     event.preventDefault();
+    setSuccessMessage('');
+    setErrorMessage('');
 
     if (!selectedClinic || selectedClinic.liveStatus !== 'OPEN') {
+      setErrorMessage('This clinic is currently closed.');
       return;
     }
 
-    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    if (!user?.id) {
+      setErrorMessage('Please log in again before booking an appointment.');
+      return;
+    }
+
+    if (!appointmentForm.petId) {
+      setErrorMessage('Please register or select a pet before booking.');
+      return;
+    }
+
+    const selectedPetRecord = pets.find((pet) => String(pet.id) === String(appointmentForm.petId));
+    if (!selectedPetRecord) {
+      setErrorMessage('Selected pet was not found. Please choose a registered pet.');
+      return;
+    }
+
     const existingAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
     const newAppointment = {
       id: Date.now(),
       clinicId: selectedClinic.id,
       clinicName: selectedClinic.name,
       clinicAddress: selectedClinic.address,
-      ownerName: user?.firstname ? `${user.firstname} ${user.lastname || ''}`.trim() : 'User',
-      ownerEmail: user?.email || '',
-      petName: appointmentForm.petName.trim(),
+      userId: user.id,
+      ownerName: user.firstname ? `${user.firstname} ${user.lastname || ''}`.trim() : 'User',
+      ownerEmail: user.email || '',
+      petId: selectedPetRecord.id,
+      petName: selectedPetRecord.petName,
       appointmentDate: appointmentForm.appointmentDate,
       appointmentTime: appointmentForm.appointmentTime,
       reason: appointmentForm.reason.trim(),
@@ -252,7 +192,7 @@ const Clinics = () => {
     localStorage.setItem('appointments', JSON.stringify([...existingAppointments, newAppointment]));
     setSuccessMessage('Appointment created successfully.');
     setAppointmentForm({
-      petName: '',
+      petId: '',
       appointmentDate: '',
       appointmentTime: '',
       reason: '',
@@ -285,6 +225,9 @@ const Clinics = () => {
               <div className="dashboard-menu-dropdown">
                 <button className="dashboard-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); navigate('/dashboard'); }}>
                   Dashboard
+                </button>
+                <button className="dashboard-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); navigate('/pets'); }}>
+                  My Pets
                 </button>
                 <button className="dashboard-menu-dropdown-item" onClick={handleLogout}>
                   Logout
@@ -343,41 +286,87 @@ const Clinics = () => {
 
                 <div className="clinic-modal-section clinic-modal-booking">
                   <h3>Book Appointment</h3>
-                  {selectedClinic.liveStatus === 'OPEN' ? (
-                    <>
-                      {successMessage && <p className="form-message form-message-success">{successMessage}</p>}
-                      <form className="clinic-booking-form" onSubmit={handleAppointmentSubmit}>
-                        <div className="appointment-field">
-                          <label htmlFor="petName">Pet Name</label>
-                          <input id="petName" name="petName" type="text" value={appointmentForm.petName} onChange={handleAppointmentChange} required />
-                        </div>
-                        <div className="appointment-field">
-                          <label htmlFor="reason">Reason</label>
-                          <input id="reason" name="reason" type="text" value={appointmentForm.reason} onChange={handleAppointmentChange} required />
-                        </div>
-                        <div className="clinic-booking-split">
-                          <div className="appointment-field">
-                            <label htmlFor="appointmentDate">Date</label>
-                            <input id="appointmentDate" name="appointmentDate" type="date" value={appointmentForm.appointmentDate} onChange={handleAppointmentChange} required />
-                          </div>
-                          <div className="appointment-field">
-                            <label htmlFor="appointmentTime">Time</label>
-                            <input id="appointmentTime" name="appointmentTime" type="time" value={appointmentForm.appointmentTime} onChange={handleAppointmentChange} required />
-                          </div>
-                        </div>
-                        <div className="appointment-field">
-                          <label htmlFor="notes">Notes</label>
-                          <textarea id="notes" name="notes" rows="4" value={appointmentForm.notes} onChange={handleAppointmentChange} placeholder="Optional notes for the clinic" />
-                        </div>
-                        <button type="submit" className="dashboard-explore-btn clinic-booking-btn">Book Appointment</button>
-                      </form>
-                    </>
-                  ) : (
-                    <div className="clinic-booking-disabled">
-                      <p>This clinic is currently closed.</p>
-                      <p>Appointments can only be booked while the clinic is open.</p>
+                  {successMessage && <p className="form-message form-message-success">{successMessage}</p>}
+                  {errorMessage && <p className="form-message form-message-error">{errorMessage}</p>}
+                  {petsError && <p className="form-message form-message-error">{petsError}</p>}
+                  <form className="clinic-booking-form" onSubmit={handleAppointmentSubmit}>
+                    <div className="appointment-field">
+                      <label htmlFor="petId">Registered Pet</label>
+                      <select
+                        id="petId"
+                        name="petId"
+                        value={appointmentForm.petId}
+                        onChange={handleAppointmentChange}
+                        required
+                        disabled={petsLoading || !user?.id}
+                      >
+                        <option value="">
+                          {petsLoading ? 'Loading pets...' : pets.length > 0 ? 'Select a registered pet' : 'No registered pets yet'}
+                        </option>
+                        {pets.map((pet) => (
+                          <option key={pet.id} value={pet.id}>
+                            {pet.petName}
+                          </option>
+                        ))}
+                      </select>
                     </div>
-                  )}
+                    <div className="appointment-field">
+                      <label htmlFor="reason">Reason</label>
+                      <select
+                        id="reason"
+                        name="reason"
+                        value={appointmentForm.reason}
+                        onChange={handleAppointmentChange}
+                        required
+                      >
+                        <option value="">Select a service</option>
+                        {selectedClinic.services.map((service) => (
+                          <option key={service} value={service}>
+                            {service}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="clinic-booking-split">
+                      <div className="appointment-field">
+                        <label htmlFor="appointmentDate">Date</label>
+                        <input id="appointmentDate" name="appointmentDate" type="date" value={appointmentForm.appointmentDate} onChange={handleAppointmentChange} required />
+                      </div>
+                      <div className="appointment-field">
+                        <label htmlFor="appointmentTime">Time</label>
+                        <input id="appointmentTime" name="appointmentTime" type="time" value={appointmentForm.appointmentTime} onChange={handleAppointmentChange} required />
+                      </div>
+                    </div>
+                    <div className="appointment-field">
+                      <label htmlFor="notes">Notes</label>
+                      <textarea id="notes" name="notes" rows="4" value={appointmentForm.notes} onChange={handleAppointmentChange} placeholder="Optional notes for the clinic" />
+                    </div>
+                    {pets.length === 0 && !petsLoading && (
+                      <div className="clinic-booking-disabled">
+                        <p>You need to register a pet before booking an appointment.</p>
+                        <button
+                          type="button"
+                          className="dashboard-navbar-btn clinic-inline-action"
+                          onClick={() => navigate('/pets')}
+                        >
+                          Go to My Pets
+                        </button>
+                      </div>
+                    )}
+                    {selectedClinic.liveStatus !== 'OPEN' && (
+                      <div className="clinic-booking-disabled">
+                        <p>This clinic is currently closed.</p>
+                        <p>You can fill out the form, but booking is disabled until the clinic opens.</p>
+                      </div>
+                    )}
+                    <button
+                      type="submit"
+                      className="dashboard-explore-btn clinic-booking-btn"
+                      disabled={selectedClinic.liveStatus !== 'OPEN' || !appointmentForm.petId || !user?.id || pets.length === 0}
+                    >
+                      Book Appointment
+                    </button>
+                  </form>
                 </div>
               </div>
             </div>
@@ -442,10 +431,17 @@ const Clinics = () => {
               <article
                 key={clinic.id}
                 className="clinic-card clinic-card-clickable"
-                onClick={() => { setSuccessMessage(''); setSelectedClinic(clinic); }}
+                onClick={() => {
+                  setSuccessMessage('');
+                  setErrorMessage('');
+                  setPetsError('');
+                  setSelectedClinic(clinic);
+                }}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' || event.key === ' ') {
                     setSuccessMessage('');
+                    setErrorMessage('');
+                    setPetsError('');
                     setSelectedClinic(clinic);
                   }
                 }}
