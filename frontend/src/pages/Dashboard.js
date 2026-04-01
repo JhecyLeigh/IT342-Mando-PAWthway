@@ -132,19 +132,19 @@ const Dashboard = () => {
                   className="dashboard-menu-dropdown-item"
                   onClick={() => {
                     setShowProfileDropdown(false);
-                    navigate('/pets');
+                    navigate('/clinics');
                   }}
                 >
-                  My Pets
+                  Clinics
                 </button>
                 <button
                   className="dashboard-menu-dropdown-item"
                   onClick={() => {
                     setShowProfileDropdown(false);
-                    navigate('/clinics');
+                    navigate('/pets');
                   }}
                 >
-                  Clinics
+                  My Pets
                 </button>
                 <button
                   className="dashboard-menu-dropdown-item"

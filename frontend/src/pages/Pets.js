@@ -299,9 +299,6 @@ const Pets = () => {
                 <button className="dashboard-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); navigate('/clinics'); }}>
                   Clinics
                 </button>
-                <button className="dashboard-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); navigate('/pets'); }}>
-                  My Pets
-                </button>
                 <button className="dashboard-menu-dropdown-item" onClick={handleLogout}>
                   Logout
                 </button>
