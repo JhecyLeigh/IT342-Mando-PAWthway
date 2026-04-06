@@ -24,6 +24,7 @@ public class AuthService {
         user.setFirstname(request.getFirstname());
         user.setLastname(request.getLastname());
         user.setEmail(request.getEmail());
+        user.setUsername(request.getEmail().split("@")[0]); // Generate username from email
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         return userRepository.save(user);
     }
