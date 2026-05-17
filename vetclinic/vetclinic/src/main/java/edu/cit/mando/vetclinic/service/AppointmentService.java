@@ -1,7 +1,6 @@
 package edu.cit.mando.vetclinic.service;
 
 import edu.cit.mando.vetclinic.entity.Appointment;
-import edu.cit.mando.vetclinic.entity.User;
 import edu.cit.mando.vetclinic.repository.AppointmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,9 +44,5 @@ public class AppointmentService {
 
     public List<Appointment> getAppointmentsByStatus(String status) {
         return appointmentRepository.findByStatus(status);
-    }
-
-    public List<Appointment> getAppointmentsByUser(User user) {
-        return appointmentRepository.findByUser(user);
     }
 }

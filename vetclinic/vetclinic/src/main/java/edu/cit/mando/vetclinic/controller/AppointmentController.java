@@ -37,7 +37,7 @@ public class AppointmentController {
     public ResponseEntity<?> getAllAppointments() {
         try {
             List<Appointment> appointments = appointmentService.getAllAppointments();
-            return ResponseEntity.ok(appointments);
+            return ResponseEntity.ok(appointments.stream().map(this::toResponse).toList());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error retrieving appointments: " + e.getMessage());
         }
@@ -48,7 +48,7 @@ public class AppointmentController {
     public ResponseEntity<?> getAppointmentsByUser(@PathVariable Long userId) {
         try {
             List<Appointment> appointments = appointmentService.getAppointmentsByUser(userId);
-            return ResponseEntity.ok(appointments);
+            return ResponseEntity.ok(appointments.stream().map(this::toResponse).toList());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error retrieving user appointments: " + e.getMessage());
         }
@@ -59,7 +59,7 @@ public class AppointmentController {
     public ResponseEntity<?> getAppointmentsByClinic(@PathVariable Long clinicId) {
         try {
             List<Appointment> appointments = appointmentService.getAppointmentsByClinic(clinicId);
-            return ResponseEntity.ok(appointments);
+            return ResponseEntity.ok(appointments.stream().map(this::toResponse).toList());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error retrieving clinic appointments: " + e.getMessage());
         }
@@ -71,7 +71,7 @@ public class AppointmentController {
         try {
             Optional<Appointment> appointment = appointmentService.getAppointmentById(id);
             if (appointment.isPresent()) {
-                return ResponseEntity.ok(appointment.get());
+                return ResponseEntity.ok(toResponse(appointment.get()));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Appointment not found");
             }
@@ -119,7 +119,7 @@ public class AppointmentController {
             appointment.setNotes(request.getNotes());
 
             Appointment createdAppointment = appointmentService.createAppointment(appointment);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdAppointment);
+            return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(createdAppointment));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error creating appointment: " + e.getMessage());
         }
@@ -164,7 +164,7 @@ public class AppointmentController {
             }
 
             Appointment updatedAppointment = appointmentService.updateAppointment(appointment);
-            return ResponseEntity.ok(updatedAppointment);
+            return ResponseEntity.ok(toResponse(updatedAppointment));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error updating appointment: " + e.getMessage());
         }
@@ -191,9 +191,34 @@ public class AppointmentController {
     public ResponseEntity<?> getAppointmentsByStatus(@PathVariable String status) {
         try {
             List<Appointment> appointments = appointmentService.getAppointmentsByStatus(status);
-            return ResponseEntity.ok(appointments);
+            return ResponseEntity.ok(appointments.stream().map(this::toResponse).toList());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error retrieving appointments by status: " + e.getMessage());
         }
+    }
+
+    private AppointmentResponse toResponse(Appointment appointment) {
+        AppointmentResponse response = new AppointmentResponse();
+        response.setId(appointment.getId());
+        response.setUserId(appointment.getUser().getId());
+        response.setClinicId(appointment.getClinicId());
+        response.setPetId(appointment.getPet().getId());
+        response.setPetName(appointment.getPet().getPetName());
+        response.setPetType(appointment.getPetType());
+        response.setPetAge(appointment.getPetAge());
+        response.setService(appointment.getService());
+        response.setAppointmentDateTime(appointment.getAppointmentDateTime());
+        response.setStatus(appointment.getStatus());
+        response.setNotes(appointment.getNotes());
+        response.setOwnerName(buildOwnerName(appointment.getUser()));
+        response.setOwnerEmail(appointment.getUser().getEmail());
+        return response;
+    }
+
+    private String buildOwnerName(User user) {
+        String firstname = user.getFirstname() == null ? "" : user.getFirstname().trim();
+        String lastname = user.getLastname() == null ? "" : user.getLastname().trim();
+        String fullName = (firstname + " " + lastname).trim();
+        return fullName.isEmpty() ? user.getUsername() : fullName;
     }
 }

@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import clinics from '../data/clinics';
 import logo from '../assets/logo.png';
 import searchIcon from '../assets/search.png';
+import { deleteAppointment, fetchAppointmentsByUser } from '../utils/appointmentApi';
 import '../App.css';
 
 const Appointments = () => {
@@ -10,8 +12,27 @@ const Appointments = () => {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [filterStatus, setFilterStatus] = useState('all');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+  const loadAppointments = useCallback(async () => {
+    if (!user?.id) {
+      return;
+    }
+
+    try {
+      setErrorMessage('');
+      const userAppointments = await fetchAppointmentsByUser(user.id);
+      setAppointments(userAppointments);
+    } catch (error) {
+      const message =
+        error.response?.data ||
+        error.response?.data?.message ||
+        'Unable to load appointments.';
+      setErrorMessage(message);
+    }
+  }, [user?.id]);
 
   useEffect(() => {
     if (!user?.id) {
@@ -20,13 +41,7 @@ const Appointments = () => {
     }
 
     loadAppointments();
-  }, [user?.id, navigate]);
-
-  const loadAppointments = () => {
-    const allAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
-    const userAppointments = allAppointments.filter((apt) => apt.userId === user?.id);
-    setAppointments(userAppointments);
-  };
+  }, [user?.id, navigate, loadAppointments]);
 
   const handleLogout = () => {
     setShowProfileDropdown(false);
@@ -49,17 +64,26 @@ const Appointments = () => {
     setShowLogoutModal(false);
   };
 
-  const handleDeleteAppointment = (appointmentId) => {
-    const allAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
-    const updatedAppointments = allAppointments.filter((apt) => apt.id !== appointmentId);
-    localStorage.setItem('appointments', JSON.stringify(updatedAppointments));
-    loadAppointments();
+  const handleDeleteAppointment = async (appointmentId) => {
+    try {
+      setErrorMessage('');
+      await deleteAppointment(appointmentId);
+      await loadAppointments();
+    } catch (error) {
+      const message =
+        error.response?.data ||
+        error.response?.data?.message ||
+        'Unable to delete appointment.';
+      setErrorMessage(message);
+    }
   };
 
-  const getAppointmentStatus = (appointmentDate, appointmentTime) => {
-    const appointmentDateTime = new Date(`${appointmentDate}T${appointmentTime}`);
+  const getAppointmentStatus = (appointment) => {
+    const appointmentDateTime = appointment.appointmentDateTime
+      ? new Date(appointment.appointmentDateTime)
+      : new Date(`${appointment.appointmentDate}T${appointment.appointmentTime}`);
     const now = new Date();
-    
+
     if (appointmentDateTime < now) {
       return 'completed';
     }
@@ -68,11 +92,13 @@ const Appointments = () => {
 
   const filteredAppointments = appointments.filter((apt) => {
     if (filterStatus === 'all') return true;
-    return getAppointmentStatus(apt.appointmentDate, apt.appointmentTime) === filterStatus;
+    return getAppointmentStatus(apt) === filterStatus;
   });
 
   const sortedAppointments = [...filteredAppointments].sort(
-    (a, b) => new Date(`${b.appointmentDate}T${b.appointmentTime}`) - new Date(`${a.appointmentDate}T${a.appointmentTime}`)
+    (a, b) =>
+      new Date(b.appointmentDateTime || `${b.appointmentDate}T${b.appointmentTime}`) -
+      new Date(a.appointmentDateTime || `${a.appointmentDate}T${a.appointmentTime}`)
   );
 
   return (
@@ -140,6 +166,8 @@ const Appointments = () => {
             </button>
           </div>
 
+          {errorMessage && <p className="form-message form-message-error">{errorMessage}</p>}
+
           <div className="appointments-filter">
             <button
               className={`filter-btn ${filterStatus === 'all' ? 'active' : ''}`}
@@ -151,13 +179,13 @@ const Appointments = () => {
               className={`filter-btn ${filterStatus === 'upcoming' ? 'active' : ''}`}
               onClick={() => setFilterStatus('upcoming')}
             >
-              Upcoming ({appointments.filter((apt) => getAppointmentStatus(apt.appointmentDate, apt.appointmentTime) === 'upcoming').length})
+              Upcoming ({appointments.filter((apt) => getAppointmentStatus(apt) === 'upcoming').length})
             </button>
             <button
               className={`filter-btn ${filterStatus === 'completed' ? 'active' : ''}`}
               onClick={() => setFilterStatus('completed')}
             >
-              Completed ({appointments.filter((apt) => getAppointmentStatus(apt.appointmentDate, apt.appointmentTime) === 'completed').length})
+              Completed ({appointments.filter((apt) => getAppointmentStatus(apt) === 'completed').length})
             </button>
           </div>
 
@@ -175,13 +203,18 @@ const Appointments = () => {
           ) : (
             <div className="appointments-list">
               {sortedAppointments.map((appointment) => {
-                const status = getAppointmentStatus(appointment.appointmentDate, appointment.appointmentTime);
+                const backendStatus = appointment.status ? appointment.status.toLowerCase() : '';
+                const status = backendStatus && backendStatus !== 'pending' ? backendStatus : getAppointmentStatus(appointment);
+                const clinicRecord = clinics.find((clinic) => String(clinic.id) === String(appointment.clinicId));
+                const appointmentDateTime = appointment.appointmentDateTime
+                  ? new Date(appointment.appointmentDateTime)
+                  : new Date(`${appointment.appointmentDate}T${appointment.appointmentTime}`);
                 return (
                   <div key={appointment.id} className={`appointment-card ${status}`}>
                     <div className="appointment-card-header">
                       <div>
-                        <h3 className="appointment-clinic-name">{appointment.clinicName}</h3>
-                        <p className="appointment-clinic-address">{appointment.clinicAddress}</p>
+                        <h3 className="appointment-clinic-name">{clinicRecord?.name || `Clinic #${appointment.clinicId}`}</h3>
+                        <p className="appointment-clinic-address">{clinicRecord?.address || 'Clinic details not available.'}</p>
                       </div>
                       <span className={`appointment-status-badge status-${status}`}>
                         {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -192,7 +225,7 @@ const Appointments = () => {
                       <div className="appointment-detail-row">
                         <span className="detail-label">Date & Time:</span>
                         <span className="detail-value">
-                          {new Date(`${appointment.appointmentDate}T${appointment.appointmentTime}`).toLocaleString('en-US', {
+                          {appointmentDateTime.toLocaleString('en-US', {
                             weekday: 'short',
                             year: 'numeric',
                             month: 'short',
@@ -205,12 +238,12 @@ const Appointments = () => {
 
                       <div className="appointment-detail-row">
                         <span className="detail-label">Pet:</span>
-                        <span className="detail-value">{appointment.petName}</span>
+                        <span className="detail-value">{appointment.petName || `Pet #${appointment.petId}`}</span>
                       </div>
 
                       <div className="appointment-detail-row">
                         <span className="detail-label">Service:</span>
-                        <span className="detail-value">{appointment.reason}</span>
+                        <span className="detail-value">{appointment.service || appointment.reason}</span>
                       </div>
 
                       {appointment.notes && (

@@ -14,13 +14,15 @@ public class AppointmentResponse {
     private LocalDateTime appointmentDateTime;
     private String status;
     private String notes;
+    private String ownerName;
+    private String ownerEmail;
 
     // Constructors
     public AppointmentResponse() {}
 
     public AppointmentResponse(Long id, Long userId, Long clinicId, Long petId, String petName,
                               String petType, Integer petAge, String service, LocalDateTime appointmentDateTime,
-                              String status, String notes) {
+                              String status, String notes, String ownerName, String ownerEmail) {
         this.id = id;
         this.userId = userId;
         this.clinicId = clinicId;
@@ -32,6 +34,8 @@ public class AppointmentResponse {
         this.appointmentDateTime = appointmentDateTime;
         this.status = status;
         this.notes = notes;
+        this.ownerName = ownerName;
+        this.ownerEmail = ownerEmail;
     }
 
     // Getters and Setters
@@ -121,5 +125,21 @@ public class AppointmentResponse {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public String getOwnerName() {
+        return ownerName;
+    }
+
+    public void setOwnerName(String ownerName) {
+        this.ownerName = ownerName;
+    }
+
+    public String getOwnerEmail() {
+        return ownerEmail;
+    }
+
+    public void setOwnerEmail(String ownerEmail) {
+        this.ownerEmail = ownerEmail;
     }
 }

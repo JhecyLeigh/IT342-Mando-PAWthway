@@ -4,6 +4,7 @@ import clinics from '../data/clinics';
 import logo from '../assets/logo.png';
 import searchIcon from '../assets/search.png';
 import { getDeviceNow, isClinicOpen } from '../utils/clinicSchedule';
+import { createAppointment } from '../utils/appointmentApi';
 import { fetchPetsByUser } from '../utils/petApi';
 import '../App.css';
 import {
@@ -206,33 +207,41 @@ const Clinics = () => {
       return;
     }
 
-    const existingAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
-    const newAppointment = {
-      id: Date.now(),
-      clinicId: selectedClinic.id,
-      clinicName: selectedClinic.name,
-      clinicAddress: selectedClinic.address,
+    if (!selectedPetRecord.petType) {
+      setErrorMessage('Selected pet is missing its type. Please update the pet profile first.');
+      return;
+    }
+
+    const appointmentPayload = {
       userId: user.id,
-      ownerName: user.firstname ? `${user.firstname} ${user.lastname || ''}`.trim() : 'User',
-      ownerEmail: user.email || '',
+      clinicId: selectedClinic.id,
       petId: selectedPetRecord.id,
-      petName: selectedPetRecord.petName,
-      appointmentDate: appointmentForm.appointmentDate,
-      appointmentTime: appointmentForm.appointmentTime,
-      reason: appointmentForm.reason.trim(),
-      notes: appointmentForm.notes.trim(),
-      createdAt: new Date().toISOString()
+      petType: selectedPetRecord.petType,
+      petAge: selectedPetRecord.age ?? null,
+      service: appointmentForm.reason.trim(),
+      appointmentDateTime: `${appointmentForm.appointmentDate}T${appointmentForm.appointmentTime}:00`,
+      status: 'PENDING',
+      notes: appointmentForm.notes.trim()
     };
 
-    localStorage.setItem('appointments', JSON.stringify([...existingAppointments, newAppointment]));
-    setSuccessMessage('Appointment created successfully.');
-    setAppointmentForm({
-      petId: '',
-      appointmentDate: '',
-      appointmentTime: '',
-      reason: '',
-      notes: ''
-    });
+    createAppointment(appointmentPayload)
+      .then(() => {
+        setSuccessMessage('Appointment created successfully.');
+        setAppointmentForm({
+          petId: '',
+          appointmentDate: '',
+          appointmentTime: '',
+          reason: '',
+          notes: ''
+        });
+      })
+      .catch((error) => {
+        const message =
+          error.response?.data ||
+          error.response?.data?.message ||
+          'Unable to create appointment.';
+        setErrorMessage(message);
+      });
   };
 
   return (

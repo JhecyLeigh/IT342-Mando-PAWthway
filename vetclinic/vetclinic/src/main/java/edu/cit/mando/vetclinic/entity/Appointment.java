@@ -15,11 +15,11 @@ public class Appointment {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "clinic_name", nullable = false)
+    @Column(name = "clinic_id", nullable = false)
     private Long clinicId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "pet_name", nullable = false)
+    @JoinColumn(name = "pet_id", nullable = false)
     private Pet pet;
 
     @Column(name = "pet_type", nullable = false, length = 100)
