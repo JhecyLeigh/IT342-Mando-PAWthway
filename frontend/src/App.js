@@ -4,7 +4,8 @@ import Login from './pages/Login.js';
 import Register from './pages/Register.js';
 import Homepage from './pages/Homepage.js';
 import Clinics from './pages/Clinics.js';
-import Appointment from './pages/Appointment.js';
+import CreateAppointment from './pages/CreateAppointment.js';
+import Appointments from './pages/Appointments.js';
 import Pets from './pages/Pets.js';
 
 const isAuthenticated = () => Boolean(localStorage.getItem('user'));
@@ -31,7 +32,8 @@ function App() {
           <Route path="/homepage" element={<Homepage />} />
           <Route path="/pets" element={<Pets />} />
           <Route path="/clinics" element={<Clinics />} />
-          <Route path="/clinics/:clinicId/appointment" element={<Appointment />} />
+          <Route path="/clinics/:clinicId/appointment" element={<CreateAppointment />} />
+          <Route path="/appointments" element={<Appointments />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

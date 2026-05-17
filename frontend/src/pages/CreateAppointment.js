@@ -7,7 +7,7 @@ import { isClinicOpen } from '../utils/clinicSchedule';
 import { fetchPetsByUser } from '../utils/petApi';
 import '../App.css';
 
-const Appointment = () => {
+const CreateAppointment = () => {
   const navigate = useNavigate();
   const { clinicId } = useParams();
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -197,6 +197,9 @@ const Appointment = () => {
                 <button className="homepage-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); navigate('/pets'); }}>
                   My Pets
                 </button>
+                <button className="homepage-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); navigate('/appointments'); }}>
+                  My Appointments
+                </button>
                 <button className="homepage-menu-dropdown-item" onClick={handleLogout}>
                   Logout
                 </button>
@@ -328,4 +331,4 @@ const Appointment = () => {
   );
 };
 
-export default Appointment;
+export default CreateAppointment;
