@@ -149,6 +149,15 @@ const Homepage = () => {
                   className="homepage-menu-dropdown-item"
                   onClick={() => {
                     setShowProfileDropdown(false);
+                    navigate('/appointments');
+                  }}
+                >
+                  Appointments
+                </button>
+                <button
+                  className="homepage-menu-dropdown-item"
+                  onClick={() => {
+                    setShowProfileDropdown(false);
                     handleLogout();
                   }}
                 >

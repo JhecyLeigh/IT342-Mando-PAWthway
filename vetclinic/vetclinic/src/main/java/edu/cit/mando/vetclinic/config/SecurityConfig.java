@@ -21,6 +21,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/pets/**").permitAll()
                         .requestMatchers("/api/v1/appointments/**").permitAll()
+                        .requestMatchers("/api/v1/admin/**").permitAll()
                         .anyRequest().authenticated());
 
         return http.build();

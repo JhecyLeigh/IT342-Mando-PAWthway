@@ -25,7 +25,7 @@ public class Appointment {
     @Column(name = "pet_type", nullable = false, length = 100)
     private String petType;
 
-    @Column(name = "pet_age")
+    @Column(name = "pet_age", nullable = false)
     private Integer petAge;
 
     @Column(name = "service", nullable = false, length = 500)

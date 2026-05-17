@@ -26,6 +26,10 @@ const Login = () => {
       );
       console.log("Login Success:", response.data);
       localStorage.setItem("user", JSON.stringify(response.data));
+      if (response.data?.role === 'ADMIN') {
+        navigate("/admin/dashboard");
+        return;
+      }
       navigate("/homepage");
     } catch (error) {
       console.error("Login error:", error);
@@ -69,6 +73,7 @@ const Login = () => {
         </form>
 
         <p className="login-modal-register">Don't have an account? <Link to="/register">Register</Link> </p>
+        <p className="login-modal-register">Clinic admin? <Link to="/admin/login">Admin login</Link></p>
         </div>
     </div>
   );

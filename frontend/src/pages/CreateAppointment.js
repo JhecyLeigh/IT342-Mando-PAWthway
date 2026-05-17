@@ -252,7 +252,7 @@ const CreateAppointment = () => {
                   My Pets
                 </button>
                 <button className="homepage-menu-dropdown-item" onClick={() => { setShowProfileDropdown(false); navigate('/appointments'); }}>
-                  My Appointments
+                  Appointments
                 </button>
                 <button className="homepage-menu-dropdown-item" onClick={handleLogout}>
                   Logout

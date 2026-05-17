@@ -30,6 +30,18 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/admin-register")
+    public ResponseEntity<?> registerAdmin(@RequestParam Long clinicId, @RequestBody RegisterRequest request) {
+        try {
+            User user = authService.registerAdmin(request, clinicId);
+            return ResponseEntity.ok(user);
+        } catch (Exception e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("Admin registration failed: " + e.getMessage());
+        }
+    }
+
     // LOGIN USER
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {

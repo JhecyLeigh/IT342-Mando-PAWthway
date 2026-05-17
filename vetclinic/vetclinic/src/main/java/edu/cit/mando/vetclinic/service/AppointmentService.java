@@ -35,11 +35,15 @@ public class AppointmentService {
     }
 
     public List<Appointment> getAppointmentsByUser(Long userId) {
-        return appointmentRepository.findByUserId(userId);
+        return appointmentRepository.findByUser_Id(userId);
     }
 
     public List<Appointment> getAppointmentsByClinic(Long clinicId) {
         return appointmentRepository.findByClinicId(clinicId);
+    }
+
+    public List<Appointment> getAppointmentsByClinicAndStatus(Long clinicId, String status) {
+        return appointmentRepository.findByClinicIdAndStatus(clinicId, status);
     }
 
     public List<Appointment> getAppointmentsByStatus(String status) {

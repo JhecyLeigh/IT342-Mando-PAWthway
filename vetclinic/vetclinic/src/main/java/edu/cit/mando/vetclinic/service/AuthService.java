@@ -26,6 +26,27 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setUsername(request.getEmail().split("@")[0]); // Generate username from email
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole("USER");
+        user.setClinicId(null);
+        return userRepository.save(user);
+    }
+
+    public User registerAdmin(RegisterRequest request, Long clinicId) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email already registered");
+        }
+        if (clinicId == null) {
+            throw new RuntimeException("Clinic is required for admin accounts");
+        }
+
+        User user = new User();
+        user.setFirstname(request.getFirstname());
+        user.setLastname(request.getLastname());
+        user.setEmail(request.getEmail());
+        user.setUsername(request.getEmail().split("@")[0]);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole("ADMIN");
+        user.setClinicId(clinicId);
         return userRepository.save(user);
     }
 

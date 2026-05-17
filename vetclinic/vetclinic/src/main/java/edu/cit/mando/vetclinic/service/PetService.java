@@ -19,7 +19,7 @@ public class PetService {
     private UserRepository userRepository;
 
     public List<Pet> getPetsByUserId(Long userId) {
-        return petRepository.findByUserIdOrderByPetNameAsc(userId);
+        return petRepository.findByUser_IdOrderByPetNameAsc(userId);
     }
 
     public Pet registerPet(PetRequest request) {
@@ -61,7 +61,7 @@ public class PetService {
             throw new RuntimeException("Age cannot be negative");
         }
 
-        Pet pet = petRepository.findByIdAndUserId(petId, request.getUserId())
+        Pet pet = petRepository.findByIdAndUser_Id(petId, request.getUserId())
                 .orElseThrow(() -> new RuntimeException("Pet not found"));
 
         pet.setPetName(request.getPetName().trim());
@@ -75,7 +75,7 @@ public class PetService {
             throw new RuntimeException("User is required");
         }
 
-        Pet pet = petRepository.findByIdAndUserId(petId, userId)
+        Pet pet = petRepository.findByIdAndUser_Id(petId, userId)
                 .orElseThrow(() -> new RuntimeException("Pet not found"));
 
         petRepository.delete(pet);

@@ -8,8 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PetRepository extends JpaRepository<Pet, Long> {
     @EntityGraph(attributePaths = "user")
-    List<Pet> findByUserIdOrderByPetNameAsc(Long userId);
+    List<Pet> findByUser_IdOrderByPetNameAsc(Long userId);
 
     @EntityGraph(attributePaths = "user")
-    Optional<Pet> findByIdAndUserId(Long id, Long userId);
+    Optional<Pet> findByIdAndUser_Id(Long id, Long userId);
 }

@@ -21,6 +21,11 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = false)
+    private String role = "USER";
+
+    private Long clinicId;
+
     // Constructor
     public User() {}
 
@@ -48,6 +53,14 @@ public class User {
         return username;
     }
 
+    public String getRole() {
+        return role;
+    }
+
+    public Long getClinicId() {
+        return clinicId;
+    }
+
     // Setters
     public void setId(Long id) {
         this.id = id;
@@ -70,5 +83,13 @@ public class User {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public void setClinicId(Long clinicId) {
+        this.clinicId = clinicId;
     }
 }

@@ -8,6 +8,7 @@ import edu.cit.mando.vetclinic.entity.User;
 import edu.cit.mando.vetclinic.repository.PetRepository;
 import edu.cit.mando.vetclinic.repository.UserRepository;
 import edu.cit.mando.vetclinic.service.AppointmentService;
+import edu.cit.mando.vetclinic.service.ClinicLogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,9 @@ public class AppointmentController {
 
     @Autowired
     private PetRepository petRepository;
+
+    @Autowired
+    private ClinicLogService clinicLogService;
 
     // Get all appointments
     @GetMapping
@@ -112,13 +116,23 @@ public class AppointmentController {
             appointment.setClinicId(request.getClinicId());
             appointment.setPet(pet.get());
             appointment.setPetType(request.getPetType());
-            appointment.setPetAge(request.getPetAge());
+            Integer petAge = request.getPetAge() != null ? request.getPetAge() : pet.get().getAge();
+            appointment.setPetAge(petAge != null ? petAge : 0);
             appointment.setService(request.getService());
             appointment.setAppointmentDateTime(request.getAppointmentDateTime());
             appointment.setStatus(request.getStatus() != null ? request.getStatus() : "PENDING");
             appointment.setNotes(request.getNotes());
 
             Appointment createdAppointment = appointmentService.createAppointment(appointment);
+            clinicLogService.record(
+                    createdAppointment.getClinicId(),
+                    createdAppointment.getId(),
+                    user.get().getId(),
+                    "USER",
+                    buildOwnerName(user.get()),
+                    "APPOINTMENT_CREATED",
+                    "User booked " + pet.get().getPetName() + " for " + createdAppointment.getService()
+            );
             return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(createdAppointment));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error creating appointment: " + e.getMessage());
@@ -164,6 +178,15 @@ public class AppointmentController {
             }
 
             Appointment updatedAppointment = appointmentService.updateAppointment(appointment);
+            clinicLogService.record(
+                    updatedAppointment.getClinicId(),
+                    updatedAppointment.getId(),
+                    updatedAppointment.getUser().getId(),
+                    "USER",
+                    buildOwnerName(updatedAppointment.getUser()),
+                    "APPOINTMENT_UPDATED",
+                    "Appointment was updated by the owner"
+            );
             return ResponseEntity.ok(toResponse(updatedAppointment));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error updating appointment: " + e.getMessage());
@@ -179,6 +202,16 @@ public class AppointmentController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Appointment not found");
             }
 
+            Appointment appointment = appointmentOpt.get();
+            clinicLogService.record(
+                    appointment.getClinicId(),
+                    appointment.getId(),
+                    appointment.getUser().getId(),
+                    "USER",
+                    buildOwnerName(appointment.getUser()),
+                    "APPOINTMENT_DELETED",
+                    "Appointment was deleted by the owner"
+            );
             appointmentService.deleteAppointment(id);
             return ResponseEntity.ok("Appointment deleted successfully");
         } catch (Exception e) {
