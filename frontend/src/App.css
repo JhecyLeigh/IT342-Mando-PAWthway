@@ -929,6 +929,59 @@
   min-height: 110px;
 }
 
+.appointment-time-select {
+  cursor: pointer;
+}
+
+.appointment-slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.65rem;
+}
+
+.appointment-slot-option {
+  border: 1px solid #c7d9ca;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff, #f5faf6);
+  color: #274a2c;
+  padding: 0.72rem 0.8rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  box-shadow: 0 8px 16px rgba(47, 111, 53, 0.06);
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease,
+    background 0.18s ease, color 0.18s ease;
+}
+
+.appointment-slot-option:hover {
+  transform: translateY(-1px);
+  border-color: #43a047;
+  box-shadow: 0 12px 18px rgba(47, 111, 53, 0.1);
+}
+
+.appointment-slot-option.selected {
+  background: linear-gradient(135deg, #2f6f35, #43a047);
+  border-color: #2f6f35;
+  color: #fff;
+  box-shadow: 0 14px 22px rgba(47, 111, 53, 0.18);
+}
+
+.appointment-slot-option:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(67, 160, 71, 0.2);
+}
+
+.appointment-slot-empty {
+  grid-column: 1 / -1;
+  border: 1px dashed #cddccd;
+  border-radius: 12px;
+  background: #f8fbf8;
+  color: #5f7361;
+  padding: 0.9rem 1rem;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
 .clinic-inline-action {
   margin-top: 0.25rem;
 }
@@ -1426,6 +1479,10 @@
 
   .appointment-actions .homepage-explore-btn {
     width: 100%;
+  }
+
+  .appointment-slot-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .appointment-card-header {

@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -82,6 +84,16 @@ public class AppointmentController {
     @PostMapping
     public ResponseEntity<?> createAppointment(@RequestBody AppointmentRequest request) {
         try {
+            LocalDateTime nowManila = LocalDateTime.now(ZoneId.of("Asia/Manila"));
+
+            if (request.getAppointmentDateTime() == null) {
+                return ResponseEntity.badRequest().body("Appointment date and time is required");
+            }
+
+            if (!request.getAppointmentDateTime().isAfter(nowManila)) {
+                return ResponseEntity.badRequest().body("You cannot book an appointment for a past date or time");
+            }
+
             // Validate user exists
             Optional<User> user = userRepository.findById(request.getUserId());
             if (!user.isPresent()) {
@@ -123,6 +135,7 @@ public class AppointmentController {
             }
 
             Appointment appointment = appointmentOpt.get();
+            LocalDateTime nowManila = LocalDateTime.now(ZoneId.of("Asia/Manila"));
 
             // Update fields if provided
             if (request.getClinicId() != null) {
@@ -138,6 +151,9 @@ public class AppointmentController {
                 appointment.setService(request.getService());
             }
             if (request.getAppointmentDateTime() != null) {
+                if (!request.getAppointmentDateTime().isAfter(nowManila)) {
+                    return ResponseEntity.badRequest().body("You cannot book an appointment for a past date or time");
+                }
                 appointment.setAppointmentDateTime(request.getAppointmentDateTime());
             }
             if (request.getStatus() != null) {

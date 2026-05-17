@@ -3,7 +3,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import clinics from '../data/clinics';
 import logo from '../assets/logo.png';
 import searchIcon from '../assets/search.png';
-import { isClinicOpen } from '../utils/clinicSchedule';
+import {
+  getClinicBookingTimeSlots,
+  getManilaTodayDateValue,
+  isClinicOpen
+} from '../utils/clinicSchedule';
 import { fetchPetsByUser } from '../utils/petApi';
 import '../App.css';
 
@@ -14,6 +18,7 @@ const CreateAppointment = () => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [, setClockTick] = useState(() => Date.now());
   const [pets, setPets] = useState([]);
   const [petsLoading, setPetsLoading] = useState(false);
   const [petsError, setPetsError] = useState('');
@@ -26,11 +31,25 @@ const CreateAppointment = () => {
   });
 
   const user = JSON.parse(localStorage.getItem('user') || 'null');
+  const todayDateValue = getManilaTodayDateValue();
   const clinic = useMemo(
     () => clinics.find((item) => String(item.id) === String(clinicId)),
     [clinicId]
   );
   const clinicStatus = clinic && isClinicOpen(clinic.schedule) ? 'OPEN' : 'CLOSED';
+  const availableTimeSlots = clinic
+    ? getClinicBookingTimeSlots(clinic.schedule, formData.appointmentDate)
+    : [];
+  const selectedTimeSlot = availableTimeSlots.find((slot) => slot.value === formData.appointmentTime);
+  const canSubmitBooking =
+    Boolean(
+      clinic &&
+      user?.id &&
+      pets.length > 0 &&
+      formData.petId &&
+      formData.appointmentDate &&
+      selectedTimeSlot
+    );
 
   useEffect(() => {
     const loadPets = async () => {
@@ -59,6 +78,14 @@ const CreateAppointment = () => {
     loadPets();
   }, [user?.id]);
 
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setClockTick(Date.now());
+    }, 60000);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
   const handleLogout = () => {
     setShowProfileDropdown(false);
     setShowLogoutModal(true);
@@ -86,6 +113,7 @@ const CreateAppointment = () => {
     setErrorMessage('');
     setFormData((current) => ({
       ...current,
+      ...(name === 'appointmentDate' ? { appointmentTime: '' } : {}),
       [name]: value
     }));
   };
@@ -94,6 +122,8 @@ const CreateAppointment = () => {
     event.preventDefault();
     setSuccessMessage('');
     setErrorMessage('');
+    const currentTodayDateValue = getManilaTodayDateValue();
+    const availableTimeSlotsForDate = getClinicBookingTimeSlots(clinic.schedule, formData.appointmentDate);
 
     if (!clinic || clinicStatus !== 'OPEN') {
       setErrorMessage('This clinic is currently closed.');
@@ -107,6 +137,21 @@ const CreateAppointment = () => {
 
     if (!formData.petId) {
       setErrorMessage('Please register or select a pet before booking.');
+      return;
+    }
+
+    if (!formData.appointmentDate) {
+      setErrorMessage('Please choose an appointment date.');
+      return;
+    }
+
+    if (formData.appointmentDate < currentTodayDateValue) {
+      setErrorMessage('You cannot book an appointment for a past date.');
+      return;
+    }
+
+    if (!availableTimeSlotsForDate.some((slot) => slot.value === formData.appointmentTime)) {
+      setErrorMessage('Please choose a time within the clinic open hours.');
       return;
     }
 
@@ -286,11 +331,40 @@ const CreateAppointment = () => {
               </div>
               <div className="appointment-field">
                 <label htmlFor="appointmentDate">Date</label>
-                <input id="appointmentDate" name="appointmentDate" type="date" value={formData.appointmentDate} onChange={handleChange} required />
+                <input
+                  id="appointmentDate"
+                  name="appointmentDate"
+                  type="date"
+                  value={formData.appointmentDate}
+                  onChange={handleChange}
+                  min={todayDateValue}
+                  required
+                />
               </div>
               <div className="appointment-field">
                 <label htmlFor="appointmentTime">Time</label>
-                <input id="appointmentTime" name="appointmentTime" type="time" value={formData.appointmentTime} onChange={handleChange} required />
+                <select
+                  id="appointmentTime"
+                  name="appointmentTime"
+                  className="appointment-time-select"
+                  value={formData.appointmentTime}
+                  onChange={handleChange}
+                  disabled={!formData.appointmentDate || availableTimeSlots.length === 0}
+                  required
+                >
+                  <option value="">
+                    {formData.appointmentDate
+                      ? availableTimeSlots.length > 0
+                        ? 'Select an available time'
+                        : 'No available time slots'
+                      : 'Choose a date first'}
+                  </option>
+                  {availableTimeSlots.map((slot) => (
+                    <option key={slot.value} value={slot.value}>
+                      {slot.label}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -315,12 +389,12 @@ const CreateAppointment = () => {
             {clinicStatus !== 'OPEN' && (
               <div className="clinic-booking-disabled">
                 <p>This clinic is currently closed.</p>
-                <p>You can prepare the appointment details, but the booking button is disabled until the clinic opens.</p>
+                <p>You can still book a future slot as long as the selected date and time fall within the clinic hours.</p>
               </div>
             )}
 
             <div className="appointment-actions">
-              <button type="submit" className="homepage-explore-btn" disabled={clinicStatus !== 'OPEN' || !formData.petId || !user?.id || pets.length === 0}>
+              <button type="submit" className="homepage-explore-btn" disabled={!canSubmitBooking}>
                 Book Appointment
               </button>
             </div>

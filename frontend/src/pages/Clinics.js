@@ -6,6 +6,10 @@ import searchIcon from '../assets/search.png';
 import { getDeviceNow, isClinicOpen } from '../utils/clinicSchedule';
 import { fetchPetsByUser } from '../utils/petApi';
 import '../App.css';
+import {
+  getClinicBookingTimeSlots,
+  getManilaTodayDateValue,
+} from '../utils/clinicSchedule';
 
 const Clinics = () => {
   const navigate = useNavigate();
@@ -30,6 +34,7 @@ const Clinics = () => {
     notes: ''
   });
   const user = JSON.parse(localStorage.getItem('user') || 'null');
+  const todayDateValue = getManilaTodayDateValue();
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -134,6 +139,19 @@ const Clinics = () => {
       const comparison = a.name.localeCompare(b.name);
       return sortOrder === 'A-Z' ? comparison : -comparison;
     });
+  const availableTimeSlots = selectedClinic
+    ? getClinicBookingTimeSlots(selectedClinic.schedule, appointmentForm.appointmentDate)
+    : [];
+  const selectedTimeSlot = availableTimeSlots.find((slot) => slot.value === appointmentForm.appointmentTime);
+  const canSubmitBooking =
+    Boolean(
+      selectedClinic &&
+      user?.id &&
+      pets.length > 0 &&
+      appointmentForm.petId &&
+      appointmentForm.appointmentDate &&
+      selectedTimeSlot
+    );
 
   const handleAppointmentChange = (event) => {
     const { name, value } = event.target;
@@ -141,6 +159,7 @@ const Clinics = () => {
     setErrorMessage('');
     setAppointmentForm((current) => ({
       ...current,
+      ...(name === 'appointmentDate' ? { appointmentTime: '' } : {}),
       [name]: value
     }));
   };
@@ -149,6 +168,7 @@ const Clinics = () => {
     event.preventDefault();
     setSuccessMessage('');
     setErrorMessage('');
+    const availableTimeSlotsForDate = getClinicBookingTimeSlots(selectedClinic.schedule, appointmentForm.appointmentDate);
 
     if (!selectedClinic || selectedClinic.liveStatus !== 'OPEN') {
       setErrorMessage('This clinic is currently closed.');
@@ -162,6 +182,21 @@ const Clinics = () => {
 
     if (!appointmentForm.petId) {
       setErrorMessage('Please register or select a pet before booking.');
+      return;
+    }
+
+    if (!appointmentForm.appointmentDate) {
+      setErrorMessage('Please choose an appointment date.');
+      return;
+    }
+
+    if (appointmentForm.appointmentDate < todayDateValue) {
+      setErrorMessage('You cannot book an appointment for a past date.');
+      return;
+    }
+
+    if (!availableTimeSlotsForDate.some((slot) => slot.value === appointmentForm.appointmentTime)) {
+      setErrorMessage('Please choose a time within the clinic open hours.');
       return;
     }
 
@@ -330,11 +365,40 @@ const Clinics = () => {
                     <div className="clinic-booking-split">
                       <div className="appointment-field">
                         <label htmlFor="appointmentDate">Date</label>
-                        <input id="appointmentDate" name="appointmentDate" type="date" value={appointmentForm.appointmentDate} onChange={handleAppointmentChange} required />
+                        <input
+                          id="appointmentDate"
+                          name="appointmentDate"
+                          type="date"
+                          value={appointmentForm.appointmentDate}
+                          onChange={handleAppointmentChange}
+                          min={todayDateValue}
+                          required
+                        />
                       </div>
                       <div className="appointment-field">
                         <label htmlFor="appointmentTime">Time</label>
-                        <input id="appointmentTime" name="appointmentTime" type="time" value={appointmentForm.appointmentTime} onChange={handleAppointmentChange} required />
+                        <select
+                          id="appointmentTime"
+                          name="appointmentTime"
+                          className="appointment-time-select"
+                          value={appointmentForm.appointmentTime}
+                          onChange={handleAppointmentChange}
+                          disabled={!appointmentForm.appointmentDate || availableTimeSlots.length === 0}
+                          required
+                        >
+                          <option value="">
+                            {appointmentForm.appointmentDate
+                              ? availableTimeSlots.length > 0
+                                ? 'Select an available time'
+                                : 'No available time slots'
+                              : 'Choose a date first'}
+                          </option>
+                          {availableTimeSlots.map((slot) => (
+                            <option key={slot.value} value={slot.value}>
+                              {slot.label}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                     </div>
                     <div className="appointment-field">
@@ -356,13 +420,13 @@ const Clinics = () => {
                     {selectedClinic.liveStatus !== 'OPEN' && (
                       <div className="clinic-booking-disabled">
                         <p>This clinic is currently closed.</p>
-                        <p>You can fill out the form, but booking is disabled until the clinic opens.</p>
+                        <p>You can still book a future slot as long as the selected date and time fall within the clinic hours.</p>
                       </div>
                     )}
                     <button
                       type="submit"
                       className="homepage-explore-btn clinic-booking-btn"
-                      disabled={selectedClinic.liveStatus !== 'OPEN' || !appointmentForm.petId || !user?.id || pets.length === 0}
+                      disabled={!canSubmitBooking}
                     >
                       Book Appointment
                     </button>
