@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import clinics from '../data/clinics';
 import logo from '../assets/logo.png';
-import searchIcon from '../assets/search.png';
 import { fetchAdminLogs } from '../utils/adminApi';
 import '../App.css';
 
@@ -10,6 +9,8 @@ const AdminLogs = () => {
   const navigate = useNavigate();
   const [logs, setLogs] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
+  const [showAdminMenu, setShowAdminMenu] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const adminUser = JSON.parse(localStorage.getItem('user') || 'null');
   const clinic = useMemo(
     () => clinics.find((item) => String(item.id) === String(adminUser?.clinicId)),
@@ -39,6 +40,21 @@ const AdminLogs = () => {
     loadLogs();
   }, [adminUser?.id, navigate]);
 
+  const requestLogout = () => {
+    setShowAdminMenu(false);
+    setShowLogoutModal(true);
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutModal(false);
+  };
+
+  const confirmLogout = () => {
+    localStorage.removeItem('user');
+    setShowLogoutModal(false);
+    navigate('/admin/login', { replace: true });
+  };
+
   return (
     <div className="homepage-bg">
       <nav className="homepage-navbar">
@@ -46,16 +62,52 @@ const AdminLogs = () => {
           <img src={logo} alt="Logo" className="homepage-navbar-logo" />
         </div>
         <div className="homepage-navbar-search-menu">
-          <div className="homepage-navbar-search">
-            <img src={searchIcon} alt="Search" className="homepage-navbar-search-img" />
-            <input className="homepage-navbar-search-input" type="text" value="Clinic Logs" readOnly />
-          </div>
-          <div className="appointment-card-actions">
-            <button className="homepage-navbar-btn" onClick={() => navigate('/admin/dashboard')}>Dashboard</button>
-            <button className="homepage-navbar-btn" onClick={() => navigate('/admin/appointments')}>Appointments</button>
+          <div className="admin-navbar-clinic-name">{clinic?.name || `Clinic #${adminUser?.clinicId || ''}`}</div>
+          <div className="homepage-menu-dropdown-container">
+            <button className="homepage-navbar-btn" onClick={() => setShowAdminMenu((value) => !value)}>
+              Menu
+            </button>
+            {showAdminMenu && (
+              <div className="homepage-menu-dropdown">
+                <button
+                  className="homepage-menu-dropdown-item"
+                  onClick={() => {
+                    setShowAdminMenu(false);
+                    navigate('/admin/dashboard');
+                  }}
+                >
+                  Dashboard
+                </button>
+                <button
+                  className="homepage-menu-dropdown-item"
+                  onClick={() => {
+                    setShowAdminMenu(false);
+                    navigate('/admin/appointments');
+                  }}
+                >
+                  Appointments
+                </button>
+                <button className="homepage-menu-dropdown-item" onClick={requestLogout}>
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </nav>
+
+      {showLogoutModal && (
+        <div className="homepage-logout-modal-bg">
+          <div className="homepage-logout-modal">
+            <h3>Confirm Logout</h3>
+            <p>Are you sure you want to logout?</p>
+            <div className="homepage-logout-actions">
+              <button className="homepage-logout-btn" onClick={confirmLogout}>Logout</button>
+              <button className="homepage-logout-btn homepage-logout-btn-secondary" onClick={cancelLogout}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="homepage-content-wrapper">
         <div className="homepage-content">

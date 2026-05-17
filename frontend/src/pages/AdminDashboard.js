@@ -2,20 +2,18 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import clinics from '../data/clinics';
 import logo from '../assets/logo.png';
-import searchIcon from '../assets/search.png';
 import {
-  confirmAdminAppointment,
   fetchAdminDashboard,
-  fetchPendingAdminAppointments
 } from '../utils/adminApi';
 import '../App.css';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [summary, setSummary] = useState(null);
-  const [pendingAppointments, setPendingAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [showAdminMenu, setShowAdminMenu] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const adminUser = JSON.parse(localStorage.getItem('user') || 'null');
   const clinic = clinics.find((item) => String(item.id) === String(adminUser?.clinicId));
 
@@ -27,12 +25,8 @@ const AdminDashboard = () => {
 
     try {
       setLoading(true);
-      const [dashboardData, pendingData] = await Promise.all([
-        fetchAdminDashboard(adminUser.id),
-        fetchPendingAdminAppointments(adminUser.id)
-      ]);
+      const dashboardData = await fetchAdminDashboard(adminUser.id);
       setSummary(dashboardData);
-      setPendingAppointments(pendingData);
       setErrorMessage('');
     } catch (error) {
       const message =
@@ -49,21 +43,18 @@ const AdminDashboard = () => {
     loadData();
   }, [loadData]);
 
-  const handleConfirm = async (appointmentId) => {
-    try {
-      await confirmAdminAppointment(appointmentId, adminUser.id);
-      await loadData();
-    } catch (error) {
-      const message =
-        error.response?.data ||
-        error.response?.data?.message ||
-        'Unable to confirm appointment.';
-      setErrorMessage(message);
-    }
+  const requestLogout = () => {
+    setShowAdminMenu(false);
+    setShowLogoutModal(true);
   };
 
-  const handleLogout = () => {
+  const cancelLogout = () => {
+    setShowLogoutModal(false);
+  };
+
+  const confirmLogout = () => {
     localStorage.removeItem('user');
+    setShowLogoutModal(false);
     navigate('/admin/login', { replace: true });
   };
 
@@ -78,13 +69,52 @@ const AdminDashboard = () => {
           <img src={logo} alt="Logo" className="homepage-navbar-logo" />
         </div>
         <div className="homepage-navbar-search-menu">
-          <div className="homepage-navbar-search">
-            <img src={searchIcon} alt="Search" className="homepage-navbar-search-img" />
-            <input className="homepage-navbar-search-input" type="text" value="Admin Dashboard" readOnly />
+          <div className="admin-navbar-clinic-name">{clinic?.name || `Clinic #${adminUser?.clinicId || ''}`}</div>
+          <div className="homepage-menu-dropdown-container">
+            <button className="homepage-navbar-btn" onClick={() => setShowAdminMenu((value) => !value)}>
+              Menu
+            </button>
+            {showAdminMenu && (
+              <div className="homepage-menu-dropdown">
+                <button
+                  className="homepage-menu-dropdown-item"
+                  onClick={() => {
+                    setShowAdminMenu(false);
+                    navigate('/admin/appointments');
+                  }}
+                >
+                  Appointments
+                </button>
+                <button
+                  className="homepage-menu-dropdown-item"
+                  onClick={() => {
+                    setShowAdminMenu(false);
+                    navigate('/admin/logs');
+                  }}
+                >
+                  Logs
+                </button>
+                <button className="homepage-menu-dropdown-item" onClick={requestLogout}>
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
-          <button className="homepage-navbar-btn" onClick={handleLogout}>Logout</button>
         </div>
       </nav>
+
+      {showLogoutModal && (
+        <div className="homepage-logout-modal-bg">
+          <div className="homepage-logout-modal">
+            <h3>Confirm Logout</h3>
+            <p>Are you sure you want to logout?</p>
+            <div className="homepage-logout-actions">
+              <button className="homepage-logout-btn" onClick={confirmLogout}>Logout</button>
+              <button className="homepage-logout-btn homepage-logout-btn-secondary" onClick={cancelLogout}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="homepage-content-wrapper">
         <div className="homepage-content">
@@ -94,26 +124,13 @@ const AdminDashboard = () => {
               <h2 className="homepage-title">
                 {clinic?.name || `Clinic #${adminUser?.clinicId || ''}`}
               </h2>
-              <p className="homepage-desc">
-                Manage appointments, confirm bookings, and review clinic activity logs.
-              </p>
-            </div>
-            <div className="appointment-card-actions">
-              <button className="homepage-explore-btn" onClick={() => navigate('/admin/appointments')}>
-                Appointments
-              </button>
-              <button className="homepage-explore-btn" onClick={() => navigate('/admin/logs')}>
-                Logs
-              </button>
             </div>
           </div>
 
           {errorMessage && <p className="form-message form-message-error">{errorMessage}</p>}
-
-          <div className="clinics-summary" style={{ marginBottom: '1rem' }}>
-            Clinic: {clinic?.address || 'Clinic details unavailable'}
-          </div>
-
+            <span>
+              <strong>{clinic?.address || 'Clinic details unavailable'}</strong>
+            </span>
           <div className="clinic-stats-grid">
             <div className="clinic-stat-card">
               <strong>{summary?.pendingAppointments ?? 0}</strong>
@@ -131,62 +148,6 @@ const AdminDashboard = () => {
               <strong>{summary?.totalLogs ?? 0}</strong>
               <span>Logs</span>
             </div>
-          </div>
-
-          <div className="appointments-list" style={{ marginTop: '1.5rem' }}>
-            <h3 className="homepage-title" style={{ marginBottom: '1rem' }}>Appointments to Confirm</h3>
-            {pendingAppointments.length === 0 ? (
-              <div className="appointments-empty">
-                <p className="homepage-desc">No pending appointments for this clinic.</p>
-              </div>
-            ) : (
-              pendingAppointments.map((appointment) => (
-                <div key={appointment.id} className="appointment-card">
-                  <div className="appointment-card-header">
-                    <div>
-                      <h3 className="appointment-clinic-name">{appointment.petName}</h3>
-                      <p className="appointment-clinic-address">
-                        {appointment.ownerName} - {appointment.ownerEmail}
-                      </p>
-                    </div>
-                    <span className="appointment-status-badge status-upcoming">Pending</span>
-                  </div>
-                  <div className="appointment-card-details">
-                    <div className="appointment-detail-row">
-                      <span className="detail-label">Service:</span>
-                      <span className="detail-value">{appointment.service}</span>
-                    </div>
-                    <div className="appointment-detail-row">
-                      <span className="detail-label">Date & Time:</span>
-                      <span className="detail-value">
-                        {new Date(appointment.appointmentDateTime).toLocaleString('en-US', {
-                          weekday: 'short',
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </span>
-                    </div>
-                    {appointment.notes && (
-                      <div className="appointment-detail-row">
-                        <span className="detail-label">Notes:</span>
-                        <span className="detail-value">{appointment.notes}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="appointment-card-actions">
-                    <button
-                      className="homepage-explore-btn"
-                      onClick={() => handleConfirm(appointment.id)}
-                    >
-                      Confirm
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
           </div>
         </div>
       </div>
